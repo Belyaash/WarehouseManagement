@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using Domain.Entities.DispatchDocuments;
 using Domain.Entities.DomainClients.Parameters;
 using Domain.Enums;
 
@@ -17,7 +19,11 @@ public class DomainClient
     }
 
     public int Id { get; private set; }
+    [MaxLength(255)]
     public string Name { get; private set; } = default!;
     public string Address { get; private set; } = default!;
     public StateType State { get; private set; }
+
+    private List<DispatchDocument> _dispatchDocuments = new();
+    public IReadOnlyList<DispatchDocument> DispatchDocuments => _dispatchDocuments.AsReadOnly();
 }

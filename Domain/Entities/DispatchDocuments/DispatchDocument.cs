@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Domain.Entities.DispatchDocumentResources;
 using Domain.Entities.DispatchDocuments.Parameters;
 using Domain.Entities.DomainClients;
@@ -13,14 +14,16 @@ public class DispatchDocument
 
     public DispatchDocument(CreateDispatchDocumentParameters parameters)
     {
-        Number = parameters.Number;
+        DocumentNumber = parameters.DocumentNumber;
         Client = parameters.Client;
         DateOnly = parameters.DateOnly;
         State = StateType.Archived;
     }
 
     public int Id { get; private set; }
-    public int Number { get; private set; }
+
+    [MaxLength(255)]
+    public string DocumentNumber { get; private set; } = default!;
 
     public int ClientId { get; private set; }
     public DomainClient Client { get; private set; } = default!;

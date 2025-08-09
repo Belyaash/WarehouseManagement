@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Domain.Entities.Balances;
 using Domain.Entities.DispatchDocumentResources;
 using Domain.Entities.LoadingDocumentResources;
@@ -20,6 +21,8 @@ public class Resource
     }
 
     public int Id { get; private set; }
+
+    [MaxLength(255)]
     public string Name { get; private set; } = default!;
     public StateType State { get; private set; }
 

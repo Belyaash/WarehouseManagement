@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Domain.Entities.Balances.Parameters;
 using Domain.Entities.MeasureUnits;
 using Domain.Entities.Resources;
