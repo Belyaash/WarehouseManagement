@@ -1,3 +1,4 @@
+using Application.Contracts.Features.MeasureUnit.Commands.InsertMeasureUnit;
 using MediatR;
 
 namespace Application.Contracts.Features.Resource.Commands.InsertResource;

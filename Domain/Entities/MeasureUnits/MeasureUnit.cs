@@ -5,6 +5,7 @@ using Domain.Entities.LoadingDocumentResources;
 using Domain.Entities.LoadingDocuments;
 using Domain.Entities.MeasureUnits.Parameters;
 using Domain.Enums;
+using LinqSpecs;
 
 namespace Domain.Entities.MeasureUnits;
 
@@ -34,4 +35,46 @@ public class MeasureUnit
 
     private List<Balance> _balances = new();
     public IReadOnlyList<Balance> Balances => _balances.AsReadOnly();
+
+    public void Update(UpdateMeasureUnitParameters parameters)
+    {
+        Name = parameters.Name;
+    }
+
+    public void ChangeState(ChangeMeasureUnitStateParameters parameters)
+    {
+        State = parameters.StateType;
+    }
+
+    #region Spec
+
+    public static class Spec
+    {
+        public static Specification<MeasureUnit> ByName(string resourceName)
+        {
+            return new AdHocSpecification<MeasureUnit>(r => r.Name == resourceName);
+        }
+
+        public static Specification<MeasureUnit> ById(int id)
+        {
+            return new AdHocSpecification<MeasureUnit>(r => r.Id == id);
+        }
+
+        public static Specification<MeasureUnit> ByState(StateType type)
+        {
+            return new AdHocSpecification<MeasureUnit>(r => r.State == type);
+        }
+
+        public static Specification<MeasureUnit> CanBeDeleted()
+        {
+            return new AdHocSpecification<MeasureUnit>(r =>
+                !(r.Balances.Any()
+                  ||
+                  r.DispatchDocumentResources.Any()
+                  ||
+                  r.LoadingDocumentResources.Any()));
+        }
+    }
+
+    #endregion
 }

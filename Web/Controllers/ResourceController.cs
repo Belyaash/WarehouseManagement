@@ -1,3 +1,4 @@
+using Application.Contracts.Features.MeasureUnit.Commands.InsertMeasureUnit;
 using Application.Contracts.Features.Resource.Commands.DeleteResource;
 using Application.Contracts.Features.Resource.Commands.InsertResource;
 using Application.Contracts.Features.Resource.Commands.UpdateResource;
@@ -19,7 +20,6 @@ public sealed class ResourceController : AppController
     /// <param name="dto"></param>
     /// <returns></returns>
     [HttpGet("list")]
-    [AllowAnonymous]
     public async Task<Ok<GetResourcesResponseDto>> GetResources([FromQuery] GetResourcesRequestDto dto)
     {
         return TypedResults.Ok(await Mediator.Send(new GetResourcesQuery(dto), HttpContext.RequestAborted));
