@@ -1,4 +1,4 @@
-﻿namespace Persistence.Interfaces;
+﻿namespace Persistence.Contracts;
 
 public interface IDbSet<TEntity> : IQueryable<TEntity>, IAsyncEnumerable<TEntity> where TEntity : class
 {

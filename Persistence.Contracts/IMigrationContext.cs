@@ -1,4 +1,4 @@
-namespace Persistence.Interfaces;
+namespace Persistence.Contracts;
 
 public interface IMigrationContext
 {

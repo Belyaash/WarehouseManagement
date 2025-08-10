@@ -21,7 +21,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<LoadingDocumentResource> LoadingDocumentResources => Set<LoadingDocumentResource>();
     public DbSet<LoadingDocument> LoadingDocuments => Set<LoadingDocument>();
     public DbSet<MeasureUnit> MeasureUnits => Set<MeasureUnit>();
-    public DbSet<Resource> Resources => Set<Resource>();
+    public DbSet<DomainResource> Resources => Set<DomainResource>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

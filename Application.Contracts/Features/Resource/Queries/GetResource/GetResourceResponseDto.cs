@@ -1,0 +1,10 @@
+using Domain.Enums;
+
+namespace Application.Contracts.Features.Resource.Queries.GetResource;
+
+public sealed class GetResourceResponseDto
+{
+    public required string Name { get; init; }
+    public required StateType State { get; init; }
+    public required bool IsUsed { get; init; }
+}

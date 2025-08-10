@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Persistence.Interfaces;
+using Persistence.Contracts;
 
 namespace Persistence;
 

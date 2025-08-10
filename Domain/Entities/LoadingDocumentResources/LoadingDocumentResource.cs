@@ -13,7 +13,7 @@ public class LoadingDocumentResource
 
     public LoadingDocumentResource(CreateLoadingDocumentResourceParameters parameters)
     {
-        Resource = parameters.Resource;
+        DomainResource = parameters.DomainResource;
         LoadingDocument = parameters.LoadingDocument;
         MeasureUnit = parameters.MeasureUnit;
     }
@@ -22,7 +22,7 @@ public class LoadingDocumentResource
     public int Count { get; private set; }
 
     public int ResourceId { get; private set; }
-    public Resource Resource { get; private set; } = default!;
+    public DomainResource DomainResource { get; private set; } = default!;
 
     public int LoadingDocumentId { get; private set; }
     public LoadingDocument LoadingDocument { get; private set; } = default!;

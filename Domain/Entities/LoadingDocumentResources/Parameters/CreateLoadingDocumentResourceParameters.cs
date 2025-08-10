@@ -6,7 +6,7 @@ namespace Domain.Entities.LoadingDocumentResources.Parameters;
 
 public sealed class CreateLoadingDocumentResourceParameters
 {
-    public required Resource Resource { get; init; }
+    public required DomainResource DomainResource { get; init; }
     public required LoadingDocument LoadingDocument { get; init; }
     public required MeasureUnit MeasureUnit { get; init; }
 }

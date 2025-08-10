@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using Persistence.Interfaces;
+using Persistence.Contracts;
 
 namespace Persistence;
 

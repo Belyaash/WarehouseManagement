@@ -13,14 +13,14 @@ public class DispatchDocumentResource
 
     public DispatchDocumentResource(CreateDispatchDocumentResourceParameters parameters)
     {
-        Resource = parameters.Resource;
+        DomainResource = parameters.DomainResource;
         MeasureUnit = parameters.MeasureUnit;
         DispatchDocument = parameters.DispatchDocument;
     }
 
     public int Id { get; private set; }
     public int ResourceId { get; private set; }
-    public Resource Resource { get; private set; } = default!;
+    public DomainResource DomainResource { get; private set; } = default!;
 
     public int MeasureUnitId { get; private set; }
     public MeasureUnit MeasureUnit { get; private set; } = default!;

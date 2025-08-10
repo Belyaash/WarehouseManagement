@@ -7,9 +7,9 @@ using Domain.Entities.LoadingDocuments;
 using Domain.Entities.MeasureUnits;
 using Domain.Entities.Resources;
 
-namespace Persistence.Interfaces;
+namespace Persistence.Contracts;
 
-public interface IDbContext
+public interface IAppDbContext
 {
     IDbSet<Balance> Balances { get; }
     IDbSet<DispatchDocumentResource> DispatchDocumentResources { get; }
@@ -18,7 +18,7 @@ public interface IDbContext
     IDbSet<LoadingDocumentResource> LoadingDocumentResources { get; }
     IDbSet<LoadingDocument> LoadingDocuments { get; }
     IDbSet<MeasureUnit> MeasureUnits { get; }
-    IDbSet<Resource> Resources { get; }
+    IDbSet<DomainResource> Resources { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

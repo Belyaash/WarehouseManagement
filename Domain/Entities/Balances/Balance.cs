@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Domain.Entities.Balances.Parameters;
 using Domain.Entities.MeasureUnits;
 using Domain.Entities.Resources;
@@ -14,7 +13,7 @@ public class Balance
     public Balance(CreateBalanceParameters parameters)
     {
         MeasureUnit = parameters.MeasureUnit;
-        Resource = parameters.Resource;
+        DomainResource = parameters.DomainResource;
     }
 
     public int Id { get; private set; }
@@ -23,7 +22,7 @@ public class Balance
     public MeasureUnit MeasureUnit { get; private set; } = default!;
 
     public int ResourceId { get; private set; }
-    public Resource Resource { get; private set; } = default!;
+    public DomainResource DomainResource { get; private set; } = default!;
 
     public int Count { get; set; }
 }

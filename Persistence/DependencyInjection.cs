@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using Persistence.Interfaces;
+using Persistence.Contracts;
 
 namespace Persistence;
 
@@ -33,11 +33,11 @@ public static class DependencyInjection
         });
         
         builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
-        builder.Services.AddScoped<DbContextAdapter>();
+        builder.Services.AddScoped<AppDbContextAdapter>();
         
-        builder.Services.AddScoped<IDbContext>(sp => sp.GetRequiredService<DbContextAdapter>());
-        builder.Services.AddScoped<IMigrationContext>(sp => sp.GetRequiredService<DbContextAdapter>());
-        builder.Services.AddScoped<ITransactionContext>(sp => sp.GetRequiredService<DbContextAdapter>());
+        builder.Services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContextAdapter>());
+        builder.Services.AddScoped<IMigrationContext>(sp => sp.GetRequiredService<AppDbContextAdapter>());
+        builder.Services.AddScoped<ITransactionContext>(sp => sp.GetRequiredService<AppDbContextAdapter>());
 
         return builder;
     }

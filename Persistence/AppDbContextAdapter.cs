@@ -7,11 +7,11 @@ using Domain.Entities.LoadingDocuments;
 using Domain.Entities.MeasureUnits;
 using Domain.Entities.Resources;
 using Microsoft.EntityFrameworkCore;
-using Persistence.Interfaces;
+using Persistence.Contracts;
 
 namespace Persistence;
 
-internal sealed class DbContextAdapter(DbContext context) : IDbContext, ITransactionContext, IMigrationContext,
+internal sealed class AppDbContextAdapter(DbContext context) : IAppDbContext, ITransactionContext, IMigrationContext,
     IAsyncDisposable,
     IDisposable
 {
@@ -22,7 +22,7 @@ internal sealed class DbContextAdapter(DbContext context) : IDbContext, ITransac
     public IDbSet<LoadingDocumentResource> LoadingDocumentResources { get; } = new DbSetAdapter<LoadingDocumentResource>(context);
     public IDbSet<LoadingDocument> LoadingDocuments { get; } = new DbSetAdapter<LoadingDocument>(context);
     public IDbSet<MeasureUnit> MeasureUnits { get; } = new DbSetAdapter<MeasureUnit>(context);
-    public IDbSet<Resource> Resources { get; } = new DbSetAdapter<Resource>(context);
+    public IDbSet<DomainResource> Resources { get; } = new DbSetAdapter<DomainResource>(context);
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {

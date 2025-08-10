@@ -6,5 +6,5 @@ namespace Domain.Entities.Balances.Parameters;
 public sealed class CreateBalanceParameters
 {
     public required MeasureUnit MeasureUnit { get; init; }
-    public required Resource Resource { get; init; }
+    public required DomainResource DomainResource { get; init; }
 }
