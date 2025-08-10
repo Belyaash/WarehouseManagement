@@ -31,6 +31,12 @@ file sealed class GetBalancesHandler : IRequestHandler<GetBalancesQuery, GetBala
         var query = _context.Balances
             .AsQueryable();
 
+        if (request.Dto.ResourceFilterIds.Count != 0)
+            query = query.Where(Domain.Entities.Balances.Balance.Spec.ByResourcesContains(request.Dto.ResourceFilterIds));
+
+        if (request.Dto.MeasureUnitFilterIds.Count != 0)
+            query = query.Where(Domain.Entities.Balances.Balance.Spec.ByMeasureUnitsContains(request.Dto.MeasureUnitFilterIds));
+
         if (request.Dto.Skip.HasValue)
             query = query.Skip(request.Dto.Skip.Value);
 
