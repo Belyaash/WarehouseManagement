@@ -20,16 +20,16 @@ file sealed class UpdateMeasureUnitStateHandler : IRequestHandler<UpdateMeasureU
 
     public async Task Handle(UpdateMeasureUnitStateCommand request, CancellationToken cancellationToken)
     {
-        var resource = await _context.MeasureUnits
+        var measureUnit = await _context.MeasureUnits
             .SingleAsync(Domain.Entities.MeasureUnits.MeasureUnit.Spec.ById(request.Dto.Id), cancellationToken);
 
         var parameters = new ChangeMeasureUnitStateParameters
         {
             StateType = request.Dto.StateType
         };
-        resource.ChangeState(parameters);
+        measureUnit.ChangeState(parameters);
 
-        _context.MeasureUnits.Update(resource);
+        _context.MeasureUnits.Update(measureUnit);
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

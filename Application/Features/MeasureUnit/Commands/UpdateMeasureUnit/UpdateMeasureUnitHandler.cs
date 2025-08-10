@@ -17,16 +17,16 @@ file sealed class UpdateMeasureUnitHandler : IRequestHandler<UpdateMeasureUnitCo
 
     public async Task Handle(UpdateMeasureUnitCommand request, CancellationToken cancellationToken)
     {
-        var resource = await _context.MeasureUnits
+        var measureUnit = await _context.MeasureUnits
             .SingleAsync(Domain.Entities.MeasureUnits.MeasureUnit.Spec.ById(request.Dto.Id), cancellationToken);
 
         var parameters = new UpdateMeasureUnitParameters
         {
             Name = request.Dto.Name
         };
-        resource.Update(parameters);
+        measureUnit.Update(parameters);
 
-        _context.MeasureUnits.Update(resource);
+        _context.MeasureUnits.Update(measureUnit);
         await _context.SaveChangesAsync(cancellationToken);
     }
 }
