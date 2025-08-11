@@ -23,7 +23,7 @@ file sealed class UpdateClientHandler : IRequestHandler<UpdateClientCommand>
 
         var parameters = new UpdateDomainClientParameters
         {
-            Name = request.Dto.Name,
+            Name = request.Dto.Name.Trim(),
             Address = request.Dto.Address,
         };
         client.Update(parameters);

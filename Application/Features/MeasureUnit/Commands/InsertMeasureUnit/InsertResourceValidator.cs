@@ -16,6 +16,10 @@ public sealed class InsertResourceValidator : AbstractValidator<InsertResourceCo
         RuleFor(c => c.Dto.Name)
             .MustAsync(IsValueUniqueAsync)
             .WithMessage("Единица измерения с таким названием уже существует");
+
+        RuleFor(x => x.Dto.Name)
+            .NotEmpty()
+            .WithMessage("Название не должно быть пустым");
     }
 
     private Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)

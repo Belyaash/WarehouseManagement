@@ -16,6 +16,10 @@ public sealed class UpdateMeasureUnitValidator : AbstractValidator<UpdateMeasure
         RuleFor(x => x.Dto)
             .MustAsync(IsNewNameUniqueAsync)
             .WithMessage("Такое название уже используется");
+
+        RuleFor(x => x.Dto.Name)
+            .NotEmpty()
+            .WithMessage("Название не должно быть пустым");
     }
 
     private Task<bool> IsNewNameUniqueAsync(UpdateMeasureUnitRequestDto dto, CancellationToken cancellationToken)

@@ -22,7 +22,7 @@ file sealed class UpdateMeasureUnitHandler : IRequestHandler<UpdateMeasureUnitCo
 
         var parameters = new UpdateMeasureUnitParameters
         {
-            Name = request.Dto.Name
+            Name = request.Dto.Name.Trim()
         };
         measureUnit.Update(parameters);
 

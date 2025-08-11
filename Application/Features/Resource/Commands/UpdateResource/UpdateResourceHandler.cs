@@ -23,7 +23,7 @@ file sealed class UpdateResourceHandler : IRequestHandler<UpdateResourceCommand>
 
         var parameters = new UpdateResourceParameters
         {
-            Name = request.Dto.Name
+            Name = request.Dto.Name.Trim()
         };
         resource.Update(parameters);
 

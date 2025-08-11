@@ -28,7 +28,7 @@ file sealed class InsertMeasureUnitHandler : IRequestHandler<InsertMeasureUnitCo
     {
         var parameters = new CreateMeasureUnitParameters
         {
-            Name = request.Dto.Name,
+            Name = request.Dto.Name.Trim(),
         };
 
         return new Domain.Entities.MeasureUnits.MeasureUnit(parameters);

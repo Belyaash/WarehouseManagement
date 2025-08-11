@@ -29,7 +29,7 @@ file sealed class InsertResourceHandler : IRequestHandler<InsertResourceCommand,
     {
         var parameters = new CreateResourceParameters
         {
-            Name = request.Dto.Name,
+            Name = request.Dto.Name.Trim(),
         };
 
         return new Domain.Entities.Resources.DomainResource(parameters);

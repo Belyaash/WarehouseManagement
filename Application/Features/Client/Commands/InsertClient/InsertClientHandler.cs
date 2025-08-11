@@ -29,7 +29,7 @@ file sealed class InsertClientHandler : IRequestHandler<InsertClientCommand, Ins
     {
         var parameters = new CreateDomainClientParameters
         {
-            Name = request.Dto.Name,
+            Name = request.Dto.Name.Trim(),
             Address = request.Dto.Address,
         };
 
