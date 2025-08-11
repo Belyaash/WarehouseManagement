@@ -29,6 +29,7 @@ file sealed class GetBalancesHandler : IRequestHandler<GetBalancesQuery, GetBala
     private IQueryable<Domain.Entities.Balances.Balance> GetQuery(GetBalancesQuery request)
     {
         var query = _context.Balances
+            .Where(Domain.Entities.Balances.Balance.Spec.ByPositiveCount())
             .AsQueryable();
 
         if (request.Dto.ResourceFilterIds.Count != 0)

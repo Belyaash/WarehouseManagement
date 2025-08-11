@@ -1,3 +1,4 @@
+using Domain.Entities.Balances;
 using Domain.Entities.DispatchDocuments;
 using Domain.Entities.MeasureUnits;
 using Domain.Entities.Resources;
@@ -9,4 +10,5 @@ public sealed class CreateDispatchDocumentResourceParameters
     public required DomainResource DomainResource { get; init; }
     public required MeasureUnit MeasureUnit { get; init; }
     public required DispatchDocument DispatchDocument { get; init; }
+    public required Balance Balance { get; init; }
 }

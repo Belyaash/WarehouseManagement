@@ -49,6 +49,10 @@ public class DomainResource
 
     public static class Spec
     {
+        public static Specification<DomainResource> ByIdsList(IEnumerable<int> ids)
+        {
+            return new AdHocSpecification<DomainResource>(r => ids.Contains(r.Id));
+        }
         public static Specification<DomainResource> ByName(string resourceName)
         {
             return new AdHocSpecification<DomainResource>(r => r.Name == resourceName);

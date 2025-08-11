@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Contracts", "Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence.Contracts", "Persistence.Contracts\Persistence.Contracts.csproj", "{E236D35E-B0F3-449F-A5BA-39F18F7F246F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contracts", "Contracts", "{6BD86B9E-0347-487D-941D-A424D1B8A2DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,5 +58,9 @@ Global
 		{E236D35E-B0F3-449F-A5BA-39F18F7F246F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E236D35E-B0F3-449F-A5BA-39F18F7F246F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E236D35E-B0F3-449F-A5BA-39F18F7F246F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C471799-D2F6-4843-9D37-E782B2CCA986} = {6BD86B9E-0347-487D-941D-A424D1B8A2DC}
+		{E236D35E-B0F3-449F-A5BA-39F18F7F246F} = {6BD86B9E-0347-487D-941D-A424D1B8A2DC}
 	EndGlobalSection
 EndGlobal

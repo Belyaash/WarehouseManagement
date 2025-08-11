@@ -55,6 +55,11 @@ public class MeasureUnit
             return new AdHocSpecification<MeasureUnit>(r => r.Name == resourceName);
         }
 
+        public static Specification<MeasureUnit> ByIdsList(IEnumerable<int> ids)
+        {
+            return new AdHocSpecification<MeasureUnit>(r => ids.Contains(r.Id));
+        }
+
         public static Specification<MeasureUnit> ById(int id)
         {
             return new AdHocSpecification<MeasureUnit>(r => r.Id == id);

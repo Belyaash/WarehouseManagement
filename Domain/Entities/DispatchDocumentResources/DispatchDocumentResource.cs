@@ -1,3 +1,4 @@
+using Domain.Entities.Balances;
 using Domain.Entities.DispatchDocumentResources.Parameters;
 using Domain.Entities.DispatchDocuments;
 using Domain.Entities.MeasureUnits;
@@ -16,6 +17,7 @@ public class DispatchDocumentResource
         DomainResource = parameters.DomainResource;
         MeasureUnit = parameters.MeasureUnit;
         DispatchDocument = parameters.DispatchDocument;
+        Balance = parameters.Balance;
     }
 
     public int Id { get; private set; }
@@ -27,4 +29,7 @@ public class DispatchDocumentResource
 
     public int DispatchDocumentId { get; private set; }
     public DispatchDocument DispatchDocument { get; private set; } = default!;
+
+    public int BalanceId { get; private set; }
+    public Balance Balance { get; private set; } = default!;
 }
