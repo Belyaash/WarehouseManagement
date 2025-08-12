@@ -55,6 +55,7 @@ file sealed class UpdateLoadingDocumentHandler : IRequestHandler<UpdateLoadingDo
                              r.MeasureUnitId == documentResourceDto.MeasureUnitId);
 
             documentResource.Balance.Count += documentResourceDto.Count - documentResource.Count;
+            documentResource.Count = documentResourceDto.Count;
             _context.LoadingDocumentResources.Update(documentResource);
         }
     }

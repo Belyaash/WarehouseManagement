@@ -2,6 +2,7 @@ using Domain.Entities.Balances;
 using Domain.Entities.DispatchDocuments;
 using Domain.Entities.MeasureUnits;
 using Domain.Entities.Resources;
+using Domain.Enums;
 
 namespace Domain.Entities.DispatchDocumentResources.Parameters;
 
@@ -11,4 +12,5 @@ public sealed class CreateDispatchDocumentResourceParameters
     public required MeasureUnit MeasureUnit { get; init; }
     public required DispatchDocument DispatchDocument { get; init; }
     public required Balance Balance { get; init; }
+    public required int Count { get; init; }
 }

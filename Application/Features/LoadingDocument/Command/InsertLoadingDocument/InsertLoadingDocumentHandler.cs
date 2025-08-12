@@ -47,29 +47,6 @@ file sealed class InsertLoadingDocumentHandler : IRequestHandler<InsertLoadingDo
             .LoadAsync(cancellationToken);
     }
 
-    private void UpdateBalances(InsertLoadingDocumentCommand request)
-    {
-        _context.Balances.Local
-            .ToList()
-            .ForEach(b => b.Count += request.Dto.DocumentResources
-                .Where(d => d.ResourceId == b.ResourceId
-                            && d.MeasureUnitId == b.MeasureUnitId)
-                .Sum(d => d.Count));
-
-        var balancesToCreate = request.Dto.DocumentResources
-            .Where(d => !_context.Balances.Local.Any(b => d.ResourceId == b.ResourceId
-                                                          && d.MeasureUnitId == b.MeasureUnitId))
-            .ToList();
-
-        var newBalances = balancesToCreate.Select(b => new Domain.Entities.Balances.Balance(new CreateBalanceParameters
-        {
-            MeasureUnit = _context.MeasureUnits.Local.Single(mu => mu.Id == b.MeasureUnitId),
-            DomainResource = _context.Resources.Local.Single(r => r.Id == b.ResourceId)
-        }));
-
-        _context.Balances.AddRange(newBalances);
-    }
-
     private Domain.Entities.LoadingDocuments.LoadingDocument CreateDocument(InsertLoadingDocumentCommand request)
     {
         var createParameters = new CreateLoadingDocumentParameters

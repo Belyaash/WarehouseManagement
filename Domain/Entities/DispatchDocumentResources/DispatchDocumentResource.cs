@@ -3,6 +3,7 @@ using Domain.Entities.DispatchDocumentResources.Parameters;
 using Domain.Entities.DispatchDocuments;
 using Domain.Entities.MeasureUnits;
 using Domain.Entities.Resources;
+using Domain.Enums;
 
 namespace Domain.Entities.DispatchDocumentResources;
 
@@ -18,6 +19,12 @@ public class DispatchDocumentResource
         MeasureUnit = parameters.MeasureUnit;
         DispatchDocument = parameters.DispatchDocument;
         Balance = parameters.Balance;
+        Count = parameters.Count;
+
+        if (parameters.DispatchDocument.State == StateType.Actual)
+        {
+            Balance.Count -= Count;
+        }
     }
 
     public int Id { get; private set; }
@@ -32,4 +39,6 @@ public class DispatchDocumentResource
 
     public int BalanceId { get; private set; }
     public Balance Balance { get; private set; } = default!;
+
+    public int Count { get; set; }
 }
