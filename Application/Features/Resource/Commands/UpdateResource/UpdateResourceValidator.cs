@@ -27,6 +27,6 @@ public sealed class UpdateResourceValidator : AbstractValidator<UpdateResourceCo
     {
         return _context.Resources
             .Where(!DomainResource.Spec.ById(dto.Id))
-            .AnyAsync(!DomainResource.Spec.ByName(dto.Name), cancellationToken);
+            .AllAsync(!DomainResource.Spec.ByName(dto.Name), cancellationToken);
     }
 }

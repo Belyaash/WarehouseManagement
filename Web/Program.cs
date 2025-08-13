@@ -1,6 +1,7 @@
 using Application;
 using Persistence;
 using Web.Components;
+using Web.Middlewares;
 
 namespace Web;
 
@@ -18,6 +19,11 @@ internal static class Program
             .AddApplication()
             .AddWeb();
 
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
+            serverOptions.Limits.MaxRequestBodySize = 100_000_000;
+        });
+
         await using var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -27,6 +33,8 @@ internal static class Program
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
+
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseHttpsRedirection();
 
@@ -39,6 +47,8 @@ internal static class Program
         app.MapControllers();
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
+
+        app.UseAntiforgery();
 
 
         app.UseHealthChecks(new PathString("/health"));

@@ -1,3 +1,4 @@
+using Application.Contracts.Features.MeasureUnit.Commands.InsertMeasureUnit;
 using Application.Contracts.Features.Resource.Commands.InsertResource;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -5,11 +6,11 @@ using Persistence.Contracts;
 
 namespace Application.Features.MeasureUnit.Commands.InsertMeasureUnit;
 
-public sealed class InsertResourceValidator : AbstractValidator<InsertResourceCommand>
+public sealed class InsertMeasureUnitValidator : AbstractValidator<InsertMeasureUnitCommand>
 {
     private readonly IAppDbContext _context;
 
-    public InsertResourceValidator(IAppDbContext context)
+    public InsertMeasureUnitValidator(IAppDbContext context)
     {
         _context = context;
 

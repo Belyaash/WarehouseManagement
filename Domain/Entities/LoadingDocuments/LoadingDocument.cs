@@ -58,7 +58,7 @@ public class LoadingDocument
 
         public static Specification<LoadingDocument> IsResourceIdContains(List<int> resourceIds)
         {
-            return new AdHocSpecification<LoadingDocument>(ld => ld.Resources.Any(r => resourceIds.Contains(r.ResourceId)));
+            return new AdHocSpecification<LoadingDocument>(ld => ld.Resources.Any(r => resourceIds.Contains(r.DomainResourceId)));
         }
 
         public static Specification<LoadingDocument> IsMeasureUnitIdContains(List<int> measureUnitIds)

@@ -1,4 +1,6 @@
 using System.Reflection;
+using Application.Common;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,8 +16,12 @@ public static class DependencyInjection
                 c.RegisterServicesFromAssemblies(
                     Assembly.GetCallingAssembly(),
                     Assembly.GetExecutingAssembly());
+
+                c.AddBehavior(typeof(IPipelineBehavior<,>),
+                    typeof(ValidationBehavior<,>));
             }
         );
+        builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         return builder;
     }
 }

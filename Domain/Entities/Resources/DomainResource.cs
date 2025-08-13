@@ -71,11 +71,9 @@ public class DomainResource
         public static Specification<DomainResource> CanBeDeleted()
         {
             return new AdHocSpecification<DomainResource>(r =>
-                   !(r.Balances.Any()
-                    ||
-                    r.DispatchDocumentResources.Any()
-                    ||
-                    r.LoadingDocumentResources.Any()));
+                   !(r.DispatchDocumentResources.Any()
+                     ||
+                     r.LoadingDocumentResources.Any()));
         }
     }
 

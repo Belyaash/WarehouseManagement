@@ -89,7 +89,7 @@ public class DispatchDocument
 
         public static Specification<DispatchDocument> IsResourceIdContains(List<int> resourceIds)
         {
-            return new AdHocSpecification<DispatchDocument>(ld => ld.DispatchDocumentResources.Any(r => resourceIds.Contains(r.ResourceId)));
+            return new AdHocSpecification<DispatchDocument>(ld => ld.DispatchDocumentResources.Any(r => resourceIds.Contains(r.DomainResourceId)));
         }
 
         public static Specification<DispatchDocument> IsMeasureUnitIdContains(List<int> measureUnitIds)

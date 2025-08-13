@@ -24,7 +24,7 @@ public class Balance
     public int MeasureUnitId { get; private set; }
     public MeasureUnit MeasureUnit { get; private set; } = default!;
 
-    public int ResourceId { get; private set; }
+    public int DomainResourceId { get; private set; }
     public DomainResource DomainResource { get; private set; } = default!;
 
     private List<DispatchDocumentResource> _dispatchDocumentResources = new();
@@ -40,7 +40,7 @@ public class Balance
     {
         public static Specification<Balance> ByResourcesContains(List<int> resourceIds)
         {
-            return new AdHocSpecification<Balance>(r => resourceIds.Contains(r.ResourceId));
+            return new AdHocSpecification<Balance>(r => resourceIds.Contains(r.DomainResourceId));
         }
 
         public static Specification<Balance> ByMeasureUnitsContains(List<int> measureUnitIds)

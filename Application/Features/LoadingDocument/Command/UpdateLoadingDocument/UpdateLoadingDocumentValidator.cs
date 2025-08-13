@@ -47,7 +47,7 @@ public sealed class UpdateLoadingDocumentValidator : AbstractValidator<UpdateLoa
     private static int GetCountChangeValue(UpdateLoadingDocumentRequestDto dto, LoadingDocumentResource resource)
     {
         return dto.DocumentResources
-            .Where(d => d.ResourceId == resource.ResourceId && d.MeasureUnitId == resource.MeasureUnitId)
+            .Where(d => d.ResourceId == resource.DomainResourceId && d.MeasureUnitId == resource.MeasureUnitId)
             .Select(d => d.Count)
             .SingleOrDefault(resource.Count);
     }

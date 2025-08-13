@@ -44,7 +44,7 @@ file sealed class GetBalancesHandler : IRequestHandler<GetBalancesQuery, GetBala
         if (request.Dto.Take.HasValue)
             query = query.Take(request.Dto.Take.Value);
 
-        return query.OrderBy(q => q.ResourceId);
+        return query.OrderBy(q => q.DomainResourceId);
     }
 
     private static Expression<Func<Domain.Entities.Balances.Balance, GetBalancesResponseDto.BalanceDto>> GetResponseDtoSelector()
@@ -52,7 +52,7 @@ file sealed class GetBalancesHandler : IRequestHandler<GetBalancesQuery, GetBala
         return q => new GetBalancesResponseDto.BalanceDto
         {
             Id = q.Id,
-            ResourceId = q.ResourceId,
+            ResourceId = q.DomainResourceId,
             ResourceName = q.DomainResource.Name,
             MeasureUnitId = q.MeasureUnitId,
             MeasureUnitName = q.MeasureUnit.Name,

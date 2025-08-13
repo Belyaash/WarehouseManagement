@@ -73,7 +73,7 @@ file sealed class GetDispatchDocumentsHandler : IRequestHandler<GetDispatchDocum
             DocumentResources = ld.DispatchDocumentResources.Select(r =>
                     new GetDispatchDocumentsResponseDto.DocumentResourceDto
                     {
-                        ResourceId = r.ResourceId,
+                        ResourceId = r.DomainResourceId,
                         ResourceName = r.DomainResource.Name,
                         MeasureUnitId = r.MeasureUnitId,
                         MeasureUnitName = r.MeasureUnit.Name,

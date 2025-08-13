@@ -1,0 +1,166 @@
+@page "/resources/edit"
+@page "/resources/edit/{ResourceId:int}"
+@using Application.Contracts.Features.Resource.Commands.InsertResource
+@using Application.Contracts.Features.Resource.Commands.UpdateResource
+@using Application.Contracts.Features.Resource.Commands.UpdateResourceState
+@using Application.Contracts.Features.Resource.Queries.GetResource
+@using Domain.Enums
+@using Newtonsoft.Json.Linq
+@inject HttpClient HttpClient
+@rendermode InteractiveServer
+
+<h2>@(_isCreateMode ? "Создание ресурса" : "Редактирование ресурса")</h2>
+
+@if (_resource != null)
+{
+    <EditForm Model="_resource" OnValidSubmit="HandleSave">
+        <div class="form-group">
+            <label>Наименование</label>
+            <InputText @bind-Value="_resource!.Name" @onchange="@(e => _resource.Name = e.Value?.ToString() ?? string.Empty)" class="form-control"/>
+            <ValidationMessage For="@(() => _resource.Name)"/>
+        </div>
+
+        @if (_showError)
+        {
+            <div class="alert alert-danger">@_errorMessage</div>
+        }
+        <div class="action-buttons mt-3">
+
+            <button type="button" class="btn btn-secondary" @onclick="ReturnToList">
+                Назад к списку
+            </button>
+            <button type="submit" class="btn btn-primary ms-2">
+                Сохранить
+            </button>
+            @if (!_isCreateMode)
+            {
+                    <button type="button" class="btn btn-danger ms-2" @onclick="DeleteResource">
+                        Удалить
+                    </button>
+
+                    <button type="button" class="btn btn-warning ms-2" @onclick="ToggleArchive">
+                        @(_resource.State == StateType.Actual ? "В архив" : "Из архива")
+                    </button>
+            }
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int? ResourceId { get; set; }
+    private GetResourceResponseDto? _resource { get; set; }
+    private bool _isCreateMode = true;
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    private Timer? _errorTimer;
+    private bool _showError;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ResourceId.HasValue)
+        {
+            _isCreateMode = false;
+            _resource = (await HttpClient.GetFromJsonAsync<GetResourceResponseDto>($"api/resource?id={ResourceId}", CancellationToken.None))!;
+        }
+        else
+        {
+            _resource = new GetResourceResponseDto
+            {
+                Name = "",
+                State = StateType.Actual,
+                IsUsed = false
+            };
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        _showError = false;
+        _errorMessage = null;
+        _errorTimer?.Dispose();
+
+        if (ResourceId == null)
+        {
+            await CreateResource();
+            return;
+        }
+
+        await UpdateResource();
+    }
+
+    private async Task CreateResource()
+    {
+        var dto = new InsertResourceRequestDto
+        {
+            Name = _resource!.Name
+        };
+        var response = await HttpClient.PostAsJsonAsync("api/resource", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task UpdateResource()
+    {
+        var dto = new UpdateResourceRequestDto
+        {
+            Id = ResourceId!.Value,
+            Name = _resource!.Name
+        };
+
+        var response = await HttpClient.PutAsJsonAsync("api/resource", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task ReadCommandResponse(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/resources");
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var jObject = JObject.Parse(responseContent);
+            _errorMessage = jObject["message"]?.ToString();
+            StartErrorTimer();
+        }
+    }
+
+    private async Task DeleteResource()
+    {
+        var response = await HttpClient.DeleteAsync($"api/resource?id={ResourceId}");
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task ToggleArchive()
+    {
+        var dto = new UpdateResourceStateRequestDto
+        {
+            Id = ResourceId!.Value,
+            StateType = _resource!.State == StateType.Actual ? StateType.Archived : StateType.Actual
+        };
+
+        var response = await HttpClient.PutAsJsonAsync("api/resource/state", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private void ReturnToList()
+    {
+        Navigation.NavigateTo("/resources");
+    }
+
+    private void StartErrorTimer()
+    {
+        _showError = true;
+        _errorTimer = new Timer(_ =>
+        {
+            _showError = false;
+            InvokeAsync(StateHasChanged);
+        }, null, 5000, Timeout.Infinite);
+    }
+}

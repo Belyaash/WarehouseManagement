@@ -67,7 +67,7 @@ public sealed class UpdateDispatchDocumentValidator : AbstractValidator<UpdateDi
         if (!CanUpdateOldResources(dto, document)) return false;
 
         var newResources = dto.DocumentResources.Where(dr =>
-                !document.DispatchDocumentResources.Any(ddr => ddr.ResourceId == dr.ResourceId
+                !document.DispatchDocumentResources.Any(ddr => ddr.DomainResourceId == dr.ResourceId
                                                                &&
                                                                dr.MeasureUnitId == ddr.MeasureUnitId))
             .ToList();
@@ -80,7 +80,7 @@ public sealed class UpdateDispatchDocumentValidator : AbstractValidator<UpdateDi
         var isResourcesCanBeUpdated = dto.DocumentResources.Any(dr =>
         {
             var resource = document.DispatchDocumentResources
-                .FirstOrDefault(r => dr.ResourceId == r.ResourceId
+                .FirstOrDefault(r => dr.ResourceId == r.DomainResourceId
                                      &&
                                      dr.MeasureUnitId == r.MeasureUnitId);
             if (resource == null)

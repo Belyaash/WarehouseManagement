@@ -25,6 +25,6 @@ public sealed class InsertResourceValidator : AbstractValidator<InsertResourceCo
     private Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)
     {
         return _context.Resources
-            .AnyAsync(!Domain.Entities.Resources.DomainResource.Spec.ByName(name.Trim()), cancellationToken);
+            .AllAsync(!Domain.Entities.Resources.DomainResource.Spec.ByName(name.Trim()), cancellationToken);
     }
 }

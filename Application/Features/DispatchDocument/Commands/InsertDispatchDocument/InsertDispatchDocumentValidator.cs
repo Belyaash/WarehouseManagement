@@ -48,7 +48,7 @@ public sealed class InsertDispatchDocumentValidator : AbstractValidator<InsertDi
     private Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)
     {
         return _context.LoadingDocuments
-            .AnyAsync(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ByNumber(name.Trim()), cancellationToken);
+            .AllAsync(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ByNumber(name.Trim()), cancellationToken);
     }
 
     private async Task<bool> IsBalanceStayNotNegativeAsync(List<InsertDispatchDocumentRequestDto.DocumentResourceDto> dtos, CancellationToken cancellationToken)

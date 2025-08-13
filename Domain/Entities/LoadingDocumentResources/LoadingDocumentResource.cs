@@ -28,7 +28,7 @@ public class LoadingDocumentResource
     public int Id { get; private set; }
     public int Count { get; set; }
 
-    public int ResourceId { get; private set; }
+    public int DomainResourceId { get; private set; }
     public DomainResource DomainResource { get; private set; } = default!;
 
     public int LoadingDocumentId { get; private set; }

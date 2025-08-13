@@ -25,6 +25,6 @@ public sealed class InsertClientValidator : AbstractValidator<InsertClientComman
     private Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)
     {
         return _context.DomainClients
-            .AnyAsync(!Domain.Entities.DomainClients.DomainClient.Spec.ByName(name.Trim()), cancellationToken);
+            .AllAsync(!Domain.Entities.DomainClients.DomainClient.Spec.ByName(name.Trim()), cancellationToken);
     }
 }

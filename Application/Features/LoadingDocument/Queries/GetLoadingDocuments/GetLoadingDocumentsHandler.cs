@@ -64,7 +64,7 @@ file sealed class GetLoadingDocumentsHandler : IRequestHandler<GetLoadingDocumen
             DateOnly = ld.DateOnly,
             DocumentResources = ld.Resources.Select(r => new GetLoadingDocumentsResponseDto.DocumentResourceDto
                 {
-                    ResourceId = r.ResourceId,
+                    ResourceId = r.DomainResourceId,
                     ResourceName = r.DomainResource.Name,
                     MeasureUnitId = r.MeasureUnitId,
                     MeasureUnitName = r.MeasureUnit.Name,

@@ -19,9 +19,14 @@ public sealed class DeleteResourceValidator : AbstractValidator<DeleteResourceCo
             .WithMessage("Ресурс не может быть удалён, так как уже используется");
     }
 
-    private Task<bool> CanBeDeletedAsync(int id, CancellationToken cancellationToken)
+    private async Task<bool> CanBeDeletedAsync(int id, CancellationToken cancellationToken)
     {
-        return _context.Resources
+        var a = await _context.Resources
+            .AnyAsync(DomainResource.Spec.ById(id)
+                      &&
+                      DomainResource.Spec.CanBeDeleted(), cancellationToken);
+
+        return await _context.Resources
             .AnyAsync(DomainResource.Spec.ById(id)
                       &&
                       DomainResource.Spec.CanBeDeleted(), cancellationToken);

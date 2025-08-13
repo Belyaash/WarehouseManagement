@@ -26,7 +26,7 @@ file sealed class GetLoadingDocumentHandler : IRequestHandler<GetLoadingDocument
                 ResourceDtos = d.Resources.Select(r => new GetLoadingDocumentResponseDto.LoadingDocumentResourceDto
                     {
                         Id = r.Id,
-                        ResourceId = r.ResourceId,
+                        ResourceId = r.DomainResourceId,
                         ResourceName = r.DomainResource.Name,
                         MeasureUnitId = r.MeasureUnitId,
                         MeasureUnitName = r.MeasureUnit.Name,

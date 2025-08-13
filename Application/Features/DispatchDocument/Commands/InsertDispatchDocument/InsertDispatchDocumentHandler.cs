@@ -80,7 +80,7 @@ file sealed class InsertDispatchDocumentHandler : IRequestHandler<InsertDispatch
             var domainResource = _context.Resources.Local.Single(r => r.Id == dr.ResourceId);
             var measureUnit = _context.MeasureUnits.Local.Single(mu => mu.Id == dr.MeasureUnitId);
             var balance = _context.Balances.Local
-                .SingleOrDefault(d => d.ResourceId == dr.ResourceId
+                .SingleOrDefault(d => d.DomainResourceId == dr.ResourceId
                                       && d.MeasureUnitId == dr.MeasureUnitId)
                 ?? new Domain.Entities.Balances.Balance(new CreateBalanceParameters
                 {

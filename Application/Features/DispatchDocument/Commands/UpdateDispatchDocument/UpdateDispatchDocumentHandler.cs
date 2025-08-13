@@ -55,7 +55,7 @@ file sealed class UpdateDispatchDocumentHandler : IRequestHandler<UpdateDispatch
             .Where(r => !request.Dto.DocumentResources.Any(dto =>
                 r.MeasureUnitId == dto.MeasureUnitId
                 &&
-                dto.ResourceId == r.ResourceId))
+                dto.ResourceId == r.DomainResourceId))
             .ToList();
 
         if (state == StateType.Actual)
@@ -73,7 +73,7 @@ file sealed class UpdateDispatchDocumentHandler : IRequestHandler<UpdateDispatch
                 .Any(r =>
                     r.MeasureUnitId == dto.MeasureUnitId
                     &&
-                    dto.ResourceId == r.ResourceId))
+                    dto.ResourceId == r.DomainResourceId))
             .ToList();
 
         var newResources = request.Dto.DocumentResources.Select(dr =>
@@ -81,7 +81,7 @@ file sealed class UpdateDispatchDocumentHandler : IRequestHandler<UpdateDispatch
             var domainResource = _context.Resources.Local.Single(r => r.Id == dr.ResourceId);
             var measureUnit = _context.MeasureUnits.Local.Single(mu => mu.Id == dr.MeasureUnitId);
             var balance = _context.Balances.Local
-                              .SingleOrDefault(d => d.ResourceId == dr.ResourceId
+                              .SingleOrDefault(d => d.DomainResourceId == dr.ResourceId
                                                     && d.MeasureUnitId == dr.MeasureUnitId)
                           ?? new Domain.Entities.Balances.Balance(new CreateBalanceParameters
                           {
@@ -111,7 +111,7 @@ file sealed class UpdateDispatchDocumentHandler : IRequestHandler<UpdateDispatch
         foreach (var documentResourceDto in changedResources)
         {
             var documentResource = document.DispatchDocumentResources
-                .Single(r => r.ResourceId == documentResourceDto.ResourceId
+                .Single(r => r.DomainResourceId == documentResourceDto.ResourceId
                              &&
                              r.MeasureUnitId == documentResourceDto.MeasureUnitId);
 

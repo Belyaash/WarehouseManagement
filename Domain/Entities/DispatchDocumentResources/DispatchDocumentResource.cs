@@ -28,7 +28,7 @@ public class DispatchDocumentResource
     }
 
     public int Id { get; private set; }
-    public int ResourceId { get; private set; }
+    public int DomainResourceId { get; private set; }
     public DomainResource DomainResource { get; private set; } = default!;
 
     public int MeasureUnitId { get; private set; }
