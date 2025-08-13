@@ -25,7 +25,7 @@ public sealed class InsertMeasureUnitValidator : AbstractValidator<InsertMeasure
 
     private Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)
     {
-        return _context.Resources
-            .AnyAsync(!Domain.Entities.Resources.DomainResource.Spec.ByName(name.Trim()), cancellationToken);
+        return _context.MeasureUnits
+            .AllAsync(!Domain.Entities.MeasureUnits.MeasureUnit.Spec.ByName(name.Trim()), cancellationToken);
     }
 }

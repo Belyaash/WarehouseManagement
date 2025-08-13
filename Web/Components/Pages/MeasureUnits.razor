@@ -1,10 +1,10 @@
-@page "/resources"
-@using Application.Contracts.Features.Resource.Queries.GetResources
+@page "/measure-units"
+@using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnits
 @inject HttpClient Http
 @rendermode InteractiveServer
 
-<PageTitle>Ресурсы</PageTitle>
-<h1>Ресурсы</h1>
+<PageTitle>Единицы измерения</PageTitle>
+<h1>Единицы измерения</h1>
 
 @if (_items == null)
 {
@@ -18,7 +18,7 @@ else
             @(_currentState == 1 ? "Показать архивные" : "Показать активные")
         </button>
 
-        <button class="btn btn-primary" @onclick="NavigateToCreate" style="@(_currentState == 2 ? "display:none" : "")">Создать ресурс
+        <button class="btn btn-primary" @onclick="NavigateToCreate" style="@(_currentState == 2 ? "display:none" : "")">Создать единицу измерения
         </button>
     </div>
 
@@ -40,7 +40,7 @@ else
 }
 
 @code {
-    private List<GetResourcesResponseDto.GetResourceDto>? _items;
+    private List<GetMeasureUnitsResponseDto.GetMeasureUnitDto>? _items;
     private int _currentState = 1; // 1 - активные, 2 - архивные
     [Inject]
     public required NavigationManager Navigation { get; set; }
@@ -56,8 +56,8 @@ else
         {
             StateHasChanged(); // Принудительное обновление UI
 
-            var response = await Http.GetFromJsonAsync<GetResourcesResponseDto>($"api/resource/list?state={_currentState}");
-            _items = response?.Resources ?? new List<GetResourcesResponseDto.GetResourceDto>();
+            var response = await Http.GetFromJsonAsync<GetMeasureUnitsResponseDto>($"api/measure-unit/list?state={_currentState}");
+            _items = response?.MeasureUnits ?? new List<GetMeasureUnitsResponseDto.GetMeasureUnitDto>();
         }
         catch (Exception ex)
         {
@@ -74,11 +74,11 @@ else
 
     private void NavigateToCreate()
     {
-        Navigation.NavigateTo("/resources/edit");
+        Navigation.NavigateTo("/measure-units/edit");
     }
 
-    private void NavigateToEdit(int resourceId)
+    private void NavigateToEdit(int id)
     {
-        Navigation.NavigateTo($"/resources/edit/{resourceId}");
+        Navigation.NavigateTo($"/measure-units/edit/{id}");
     }
 }

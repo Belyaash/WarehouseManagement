@@ -26,6 +26,6 @@ public sealed class UpdateMeasureUnitValidator : AbstractValidator<UpdateMeasure
     {
         return _context.MeasureUnits
             .Where(!Domain.Entities.MeasureUnits.MeasureUnit.Spec.ById(dto.Id))
-            .AnyAsync(!Domain.Entities.MeasureUnits.MeasureUnit.Spec.ByName(dto.Name), cancellationToken);
+            .AllAsync(!Domain.Entities.MeasureUnits.MeasureUnit.Spec.ByName(dto.Name), cancellationToken);
     }
 }

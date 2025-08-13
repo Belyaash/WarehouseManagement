@@ -1,0 +1,167 @@
+@page "/measure-units/edit"
+@page "/measure-units/edit/{ResourceId:int}"
+@using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnit
+@using Application.Contracts.Features.Resource.Commands.InsertResource
+@using Application.Contracts.Features.Resource.Commands.UpdateResource
+@using Application.Contracts.Features.Resource.Commands.UpdateResourceState
+@using Application.Contracts.Features.Resource.Queries.GetResource
+@using Domain.Enums
+@using Newtonsoft.Json.Linq
+@inject HttpClient HttpClient
+@rendermode InteractiveServer
+
+<h2>@(_isCreateMode ? "Создание единицы измерения" : "Редактирование единицы измерения")</h2>
+
+@if (_dto != null)
+{
+    <EditForm Model="_dto" OnValidSubmit="HandleSave">
+        <div class="form-group">
+            <label>Наименование</label>
+            <InputText @bind-Value="_dto!.Name" @onchange="@(e => _dto.Name = e.Value?.ToString() ?? string.Empty)" class="form-control"/>
+            <ValidationMessage For="@(() => _dto.Name)"/>
+        </div>
+
+        @if (_showError)
+        {
+            <div class="alert alert-danger">@_errorMessage</div>
+        }
+        <div class="action-buttons mt-3">
+
+            <button type="button" class="btn btn-secondary" @onclick="ReturnToList">
+                Назад к списку
+            </button>
+            <button type="submit" class="btn btn-primary ms-2">
+                Сохранить
+            </button>
+            @if (!_isCreateMode)
+            {
+                    <button type="button" class="btn btn-danger ms-2" @onclick="Delete">
+                        Удалить
+                    </button>
+
+                    <button type="button" class="btn btn-warning ms-2" @onclick="ToggleArchive">
+                        @(_dto.State == StateType.Actual ? "В архив" : "Из архива")
+                    </button>
+            }
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int? ResourceId { get; set; }
+    private GetMeasureUnitResponseDto? _dto { get; set; }
+    private bool _isCreateMode = true;
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    private Timer? _errorTimer;
+    private bool _showError;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ResourceId.HasValue)
+        {
+            _isCreateMode = false;
+            _dto = (await HttpClient.GetFromJsonAsync<GetMeasureUnitResponseDto>($"api/measure-unit?id={ResourceId}", CancellationToken.None))!;
+        }
+        else
+        {
+            _dto = new GetMeasureUnitResponseDto
+            {
+                Name = "",
+                State = StateType.Actual,
+                IsUsed = false
+            };
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        _showError = false;
+        _errorMessage = null;
+        _errorTimer?.Dispose();
+
+        if (ResourceId == null)
+        {
+            await Create();
+            return;
+        }
+
+        await Update();
+    }
+
+    private async Task Create()
+    {
+        var dto = new InsertResourceRequestDto
+        {
+            Name = _dto!.Name
+        };
+        var response = await HttpClient.PostAsJsonAsync("api/measure-unit", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task Update()
+    {
+        var dto = new UpdateResourceRequestDto
+        {
+            Id = ResourceId!.Value,
+            Name = _dto!.Name
+        };
+
+        var response = await HttpClient.PutAsJsonAsync("api/measure-unit", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task ReadCommandResponse(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/measure-units");
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var jObject = JObject.Parse(responseContent);
+            _errorMessage = jObject["message"]?.ToString();
+            StartErrorTimer();
+        }
+    }
+
+    private async Task Delete()
+    {
+        var response = await HttpClient.DeleteAsync($"api/measure-unit?id={ResourceId}");
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task ToggleArchive()
+    {
+        var dto = new UpdateResourceStateRequestDto
+        {
+            Id = ResourceId!.Value,
+            StateType = _dto!.State == StateType.Actual ? StateType.Archived : StateType.Actual
+        };
+
+        var response = await HttpClient.PutAsJsonAsync("api/measure-unit/state", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private void ReturnToList()
+    {
+        Navigation.NavigateTo("/measure-units");
+    }
+
+    private void StartErrorTimer()
+    {
+        _showError = true;
+        _errorTimer = new Timer(_ =>
+        {
+            _showError = false;
+            InvokeAsync(StateHasChanged);
+        }, null, 5000, Timeout.Infinite);
+    }
+}
