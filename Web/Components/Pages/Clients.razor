@@ -1,0 +1,87 @@
+@page "/clients"
+@using Application.Contracts.Features.Client.Queries.GetClients
+@using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnits
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Клиенты</PageTitle>
+<h1>Клиенты</h1>
+
+@if (_items == null)
+{
+    <p>Загрузка данных...</p>
+}
+else
+{
+    <div class="mt-3">
+        <button class="btn @(_currentState == 1 ? "btn-primary" : "btn-secondary")"
+                @onclick="ToggleResourceState">
+            @(_currentState == 1 ? "Показать архивные" : "Показать активные")
+        </button>
+
+        <button class="btn btn-primary" @onclick="NavigateToCreate" style="@(_currentState == 2 ? "display:none" : "")">Создать клиента
+        </button>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Адрес</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _items)
+            {
+                <tr @onclick="() => NavigateToEdit(item.Id)" style="cursor: pointer">
+                    <td>@item.Name</td>
+                    <td>@item.Address</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<GetClientsResponseDto.GetClientDto>? _items;
+    private int _currentState = 1; // 1 - активные, 2 - архивные
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            StateHasChanged(); // Принудительное обновление UI
+
+            var response = await Http.GetFromJsonAsync<GetClientsResponseDto>($"api/client/list?state={_currentState}");
+            _items = response?.Clients ?? new List<GetClientsResponseDto.GetClientDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки: {ex.Message}");
+        }
+    }
+
+    private async Task ToggleResourceState()
+    {
+        _currentState = _currentState == 1 ? 2 : 1;
+        await LoadData();
+    }
+
+
+    private void NavigateToCreate()
+    {
+        Navigation.NavigateTo("/clients/edit");
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        Navigation.NavigateTo($"/clients/edit/{id}");
+    }
+}

@@ -27,6 +27,6 @@ public sealed class UpdateClientValidator : AbstractValidator<UpdateClientComman
     {
         return _context.DomainClients
             .Where(!DomainClient.Spec.ById(dto.Id))
-            .AnyAsync(!DomainClient.Spec.ByName(dto.Name), cancellationToken);
+            .AllAsync(!DomainClient.Spec.ByName(dto.Name), cancellationToken);
     }
 }

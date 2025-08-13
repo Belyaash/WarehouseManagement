@@ -1,15 +1,15 @@
-@page "/measure-units/edit"
-@page "/measure-units/edit/{ObjectId:int}"
-@using Application.Contracts.Features.MeasureUnit.Commands.InsertMeasureUnit
-@using Application.Contracts.Features.MeasureUnit.Commands.UpdateMeasureUnit
-@using Application.Contracts.Features.MeasureUnit.Commands.UpdateMeasureUnitState
-@using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnit
+@page "/clients/edit"
+@page "/clients/edit/{ObjectId:int}"
+@using Application.Contracts.Features.Client.Commands.InsertClient
+@using Application.Contracts.Features.Client.Commands.UpdateClient
+@using Application.Contracts.Features.Client.Commands.UpdateClientState
+@using Application.Contracts.Features.Client.Queries.GetClient
 @using Domain.Enums
 @using Newtonsoft.Json.Linq
 @inject HttpClient HttpClient
 @rendermode InteractiveServer
 
-<h2>@(_isCreateMode ? "Создание единицы измерения" : "Редактирование единицы измерения")</h2>
+<h2>@(_isCreateMode ? "Создание клиента" : "Редактирование клиента")</h2>
 
 @if (_dto != null)
 {
@@ -17,6 +17,12 @@
         <div class="form-group">
             <label>Наименование</label>
             <InputText @bind-Value="_dto!.Name" @onchange="@(e => _dto.Name = e.Value?.ToString() ?? string.Empty)" class="form-control"/>
+            <ValidationMessage For="@(() => _dto.Name)"/>
+        </div>
+
+        <div class="form-group">
+            <label>Адрес</label>
+            <InputText @bind-Value="_dto!.Address" @onchange="@(e => _dto.Address = e.Value?.ToString() ?? string.Empty)" class="form-control"/>
             <ValidationMessage For="@(() => _dto.Name)"/>
         </div>
 
@@ -49,7 +55,7 @@
 @code {
     [Parameter]
     public int? ObjectId { get; set; }
-    private GetMeasureUnitResponseDto? _dto { get; set; }
+    private GetClientResponseDto? _dto { get; set; }
     private bool _isCreateMode = true;
     [Inject]
     public required NavigationManager Navigation { get; set; }
@@ -62,15 +68,16 @@
         if (ObjectId.HasValue)
         {
             _isCreateMode = false;
-            _dto = (await HttpClient.GetFromJsonAsync<GetMeasureUnitResponseDto>($"api/measure-unit?id={ObjectId}", CancellationToken.None))!;
+            _dto = (await HttpClient.GetFromJsonAsync<GetClientResponseDto>($"api/client?id={ObjectId}", CancellationToken.None))!;
         }
         else
         {
-            _dto = new GetMeasureUnitResponseDto
+            _dto = new GetClientResponseDto
             {
                 Name = "",
                 State = StateType.Actual,
-                IsUsed = false
+                Address = "",
+                IsUsed = false,
             };
         }
     }
@@ -92,24 +99,26 @@
 
     private async Task Create()
     {
-        var dto = new InsertMeasureUnitRequestDto()
+        var dto = new InsertClientRequestDto()
         {
-            Name = _dto!.Name
+            Name = _dto!.Name,
+            Address = _dto!.Address
         };
-        var response = await HttpClient.PostAsJsonAsync("api/measure-unit", dto);
+        var response = await HttpClient.PostAsJsonAsync("api/client", dto);
 
         await ReadCommandResponse(response);
     }
 
     private async Task Update()
     {
-        var dto = new UpdateMeasureUnitRequestDto()
+        var dto = new UpdateClientRequestDto()
         {
             Id = ObjectId!.Value,
-            Name = _dto!.Name
+            Name = _dto!.Name,
+            Address = _dto.Address
         };
 
-        var response = await HttpClient.PutAsJsonAsync("api/measure-unit", dto);
+        var response = await HttpClient.PutAsJsonAsync("api/client", dto);
 
         await ReadCommandResponse(response);
     }
@@ -118,7 +127,7 @@
     {
         if (response.IsSuccessStatusCode)
         {
-            Navigation.NavigateTo("/measure-units");
+            Navigation.NavigateTo("/clients");
         }
         else
         {
@@ -131,27 +140,27 @@
 
     private async Task Delete()
     {
-        var response = await HttpClient.DeleteAsync($"api/measure-unit?id={ObjectId}");
+        var response = await HttpClient.DeleteAsync($"api/client?id={ObjectId}");
 
         await ReadCommandResponse(response);
     }
 
     private async Task ToggleArchive()
     {
-        var dto = new UpdateMeasureUnitStateRequestDto()
+        var dto = new UpdateClientStateRequestDto()
         {
             Id = ObjectId!.Value,
             StateType = _dto!.State == StateType.Actual ? StateType.Archived : StateType.Actual
         };
 
-        var response = await HttpClient.PutAsJsonAsync("api/measure-unit/state", dto);
+        var response = await HttpClient.PutAsJsonAsync("api/client/state", dto);
 
         await ReadCommandResponse(response);
     }
 
     private void ReturnToList()
     {
-        Navigation.NavigateTo("/measure-units");
+        Navigation.NavigateTo("/clients");
     }
 
     private void StartErrorTimer()
