@@ -12,8 +12,8 @@ public sealed class BalanceController : AppController
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    [HttpGet("list")]
-    public async Task<Ok<GetBalancesResponseDto>> GetBalances([FromQuery] GetBalancesRequestDto dto)
+    [HttpPost("list")]
+    public async Task<Ok<GetBalancesResponseDto>> GetBalances([FromBody] GetBalancesRequestDto dto)
     {
         return TypedResults.Ok(await Mediator.Send(new GetBalancesQuery(dto), HttpContext.RequestAborted));
     }

@@ -1,0 +1,184 @@
+@page "/balances"
+@using Application.Contracts.Features.Balance.Queries.GetBalances
+@using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnits
+@using Application.Contracts.Features.Resource.Queries.GetResources
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Баланс</PageTitle>
+<h1>Баланс</h1>
+
+@if (_items == null)
+{
+    <p>Загрузка данных...</p>
+}
+else
+{
+<div class="mb-3">
+    <div class="row">
+        <!-- Фильтр по ресурсам (левая колонка) -->
+        <div class="col-md-6">
+            <label class="form-label">Фильтр по ресурсам:</label>
+            <div class="border p-2" style="max-height: 200px; overflow-y: auto;">
+                @foreach (var resource in _allResources!)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="@($"resource_{resource.Id}")"
+                               checked="@(_selectedResources?.Contains(resource) ?? false)"
+                               @onchange="@((e) => ToggleResource(resource, (bool)(e.Value ?? false)))" />
+                        <label class="form-check-label" for="@($"resource_{resource}")">
+                            @resource.Name
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Фильтр по единицам измерения (правая колонка) -->
+        <div class="col-md-6">
+            <label class="form-label">Фильтр по единицам измерения:</label>
+            <div class="border p-2" style="max-height: 200px; overflow-y: auto;">
+                @foreach (var unit in _allMeasureUnits!)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="@($"measure-unit_{unit.Id}")"
+                               checked="@(_selectedMeasureUnits?.Contains(unit) ?? false)"
+                               @onchange="@((e) => ToggleMeasureUnit(unit, (bool)(e.Value ?? false)))" />
+                        <label class="form-check-label" for="@($"measure-unit_{unit}")">
+                            @unit.Name
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка "Применить фильтры" -->
+    <div class="row mt-2">
+        <div class="col-12">
+            <button class="btn btn-primary" @onclick="ApplyFilters">Применить фильтры</button>
+        </div>
+    </div>
+</div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Единица измерения</th>
+                <th>Количество</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _items)
+            {
+                <tr>
+                    <td>@item.ResourceName</td>
+                    <td>@item.MeasureUnitName</td>
+                    <td>@item.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<GetBalancesResponseDto.BalanceDto>? _items;
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    private List<GetResourcesResponseDto.GetResourceDto>? _allResources = [];
+    private HashSet<GetResourcesResponseDto.GetResourceDto>? _selectedResources = new();
+    private List<GetMeasureUnitsResponseDto.GetMeasureUnitDto>? _allMeasureUnits = [];
+    private HashSet<GetMeasureUnitsResponseDto.GetMeasureUnitDto>? _selectedMeasureUnits = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadResources();
+        await LoadMeasureUnits();
+        await LoadData();
+    }
+
+    private async Task LoadResources()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<GetResourcesResponseDto>($"api/resource/list?state=1");
+            _allResources = response?.Resources;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allResources = new();
+        }
+    }
+
+    private async Task LoadMeasureUnits()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<GetMeasureUnitsResponseDto>($"api/measure-unit/list?state=1");
+            _allMeasureUnits = response?.MeasureUnits;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allMeasureUnits = new();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            StateHasChanged(); // Принудительное обновление UI
+
+            var dto = new GetBalancesRequestDto
+            {
+                Skip = null,
+                Take = null,
+                ResourceFilterIds = _selectedResources?.Select(x => x.Id).ToList() ?? [],
+                MeasureUnitFilterIds =  _selectedMeasureUnits?.Select(x => x.Id).ToList() ?? []
+            };
+            var response = await Http.PostAsJsonAsync($"api/balance/list", dto);
+            var responseDto = await response.Content.ReadFromJsonAsync<GetBalancesResponseDto>();
+            _items = responseDto?.Balances;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки: {ex.Message}");
+        }
+    }
+
+    private void ToggleResource(GetResourcesResponseDto.GetResourceDto resource, bool isSelected)
+    {
+        if (isSelected)
+        {
+            _selectedResources?.Add(resource);
+        }
+        else
+        {
+            _selectedResources?.Remove(resource);
+        }
+    }
+
+    private void ToggleMeasureUnit(GetMeasureUnitsResponseDto.GetMeasureUnitDto measureUnit, bool isSelected)
+    {
+        if (isSelected)
+        {
+            _selectedMeasureUnits?.Add(measureUnit);
+        }
+        else
+        {
+            _selectedMeasureUnits?.Remove(measureUnit);
+        }
+    }
+    
+    private async Task ApplyFilters()
+    {
+        await LoadData();
+    }
+}
