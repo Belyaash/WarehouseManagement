@@ -1,4 +1,4 @@
-namespace Application.Contracts.Features.GetDispatchDocuments.Commands.DeleteDispatchDocument;
+namespace Application.Contracts.Features.DispatchDocuments.Commands.DeleteDispatchDocument;
 
 public sealed class DeleteDispatchDocumentRequestDto
 {

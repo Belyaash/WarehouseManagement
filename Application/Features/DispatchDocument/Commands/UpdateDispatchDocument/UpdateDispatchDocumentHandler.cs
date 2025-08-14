@@ -1,4 +1,4 @@
-using Application.Contracts.Features.GetDispatchDocuments.Commands.UpdateDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Commands.UpdateDispatchDocument;
 using Domain.Entities.Balances.Parameters;
 using Domain.Entities.DispatchDocumentResources;
 using Domain.Entities.DispatchDocumentResources.Parameters;

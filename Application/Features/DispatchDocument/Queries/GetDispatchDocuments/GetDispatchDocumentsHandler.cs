@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
-using Application.Contracts.Features.GetDispatchDocuments.Queries;
-using Application.Contracts.Features.GetDispatchDocuments.Queries.GetDispatchDocuments;
+using Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocuments;
 using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -26,9 +25,12 @@ file sealed class GetDispatchDocumentsHandler : IRequestHandler<GetDispatchDocum
 
         query = FilterAndPaginateQuery(request, query);
 
+        var dispatchDocuments = await query
+            .Select(GetResponseDtoSelector(request))
+            .ToListAsync(cancellationToken);
         return new GetDispatchDocumentsResponseDto()
         {
-            DispatchDocumentDtos = await query.Select(GetResponseDtoSelector(request)).ToListAsync(cancellationToken)
+            DispatchDocumentDtos = dispatchDocuments
         };
     }
     
@@ -65,12 +67,13 @@ file sealed class GetDispatchDocumentsHandler : IRequestHandler<GetDispatchDocum
     {
         return ld => new GetDispatchDocumentsResponseDto.DispatchDocumentDto
         {
+            Id = ld.Id,
             DocumentNumber = ld.DocumentNumber,
             DateOnly = ld.DateOnly,
             ClientId = ld.ClientId,
             ClientName = ld.Client.Name,
             State = ld.State,
-            DocumentResources = ld.DispatchDocumentResources.Select(r =>
+            DocumentResources = ld.DispatchDocumentResources.AsQueryable().Select(r =>
                     new GetDispatchDocumentsResponseDto.DocumentResourceDto
                     {
                         ResourceId = r.DomainResourceId,
@@ -85,7 +88,7 @@ file sealed class GetDispatchDocumentsHandler : IRequestHandler<GetDispatchDocum
         };
     }
 
-    private static Func<GetDispatchDocumentsResponseDto.DocumentResourceDto, bool> FilterByMeasureUnit(GetDispatchDocumentsQuery request)
+    private static Expression<Func<GetDispatchDocumentsResponseDto.DocumentResourceDto, bool>> FilterByMeasureUnit(GetDispatchDocumentsQuery request)
     {
         return r => request.Dto.MeasureUnitFilter == null
                     ||
@@ -94,7 +97,7 @@ file sealed class GetDispatchDocumentsHandler : IRequestHandler<GetDispatchDocum
                     request.Dto.MeasureUnitFilter.Contains(r.MeasureUnitId);
     }
 
-    private static Func<GetDispatchDocumentsResponseDto.DocumentResourceDto, bool> FilterByResource(GetDispatchDocumentsQuery request)
+    private static Expression<Func<GetDispatchDocumentsResponseDto.DocumentResourceDto, bool>> FilterByResource(GetDispatchDocumentsQuery request)
     {
         return r => request.Dto.ResourceFilter == null
                     ||

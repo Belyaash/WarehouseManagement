@@ -1,0 +1,5 @@
+using MediatR;
+
+namespace Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocumentNumbers;
+
+public sealed record GetDispatchDocumentNumbersQuery(GetDispatchDocumentNumbersRequestDto Dto) : IRequest<GetDispatchDocumentNumbersResponseDto>;

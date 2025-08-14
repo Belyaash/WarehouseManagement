@@ -2,6 +2,7 @@ using Application.Contracts.Features.LoadingDocument.Commands.DeleteLoadingDocum
 using Application.Contracts.Features.LoadingDocument.Commands.InsertLoadingDocument;
 using Application.Contracts.Features.LoadingDocument.Commands.UpdateLoadingDocument;
 using Application.Contracts.Features.LoadingDocument.Queries.GetLoadingDocument;
+using Application.Contracts.Features.LoadingDocument.Queries.GetLoadingDocumentNumbers;
 using Application.Contracts.Features.LoadingDocument.Queries.GetLoadingDocuments;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -16,10 +17,21 @@ public sealed class LoadingDocumentController : AppController
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    [HttpGet("list")]
-    public async Task<Ok<GetLoadingDocumentsResponseDto>> GetLoadingDocuments([FromQuery] GetLoadingDocumentsRequestDto dto)
+    [HttpPost("list")]
+    public async Task<Ok<GetLoadingDocumentsResponseDto>> GetLoadingDocuments([FromBody] GetLoadingDocumentsRequestDto dto)
     {
         return TypedResults.Ok(await Mediator.Send(new GetLoadingDocumentsQuery(dto), HttpContext.RequestAborted));
+    }
+
+    /// <summary>
+    ///     Получить список номеров документов
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    [HttpGet("numbers/list")]
+    public async Task<Ok<GetLoadingDocumentNumbersResponseDto>> GetLoadingDocumentNumbers([FromQuery] GetLoadingDocumentNumbersRequestDto dto)
+    {
+        return TypedResults.Ok(await Mediator.Send(new GetLoadingDocumentNumbersQuery(dto), HttpContext.RequestAborted));
     }
 
     /// <summary>

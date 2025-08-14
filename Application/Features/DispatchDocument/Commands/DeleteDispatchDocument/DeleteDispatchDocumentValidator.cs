@@ -1,4 +1,4 @@
-using Application.Contracts.Features.GetDispatchDocuments.Commands.DeleteDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Commands.DeleteDispatchDocument;
 using Domain.Enums;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

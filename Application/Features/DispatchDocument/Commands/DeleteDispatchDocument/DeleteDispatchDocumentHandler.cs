@@ -1,4 +1,4 @@
-using Application.Contracts.Features.GetDispatchDocuments.Commands.DeleteDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Commands.DeleteDispatchDocument;
 using MediatR;
 using Persistence.Contracts;
 using Microsoft.EntityFrameworkCore;

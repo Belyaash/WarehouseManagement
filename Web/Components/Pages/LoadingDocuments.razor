@@ -1,0 +1,285 @@
+@page "/loadings"
+@using Application.Contracts.Features.Balance.Queries.GetBalances
+@using Application.Contracts.Features.LoadingDocument.Queries.GetLoadingDocumentNumbers
+@using Application.Contracts.Features.LoadingDocument.Queries.GetLoadingDocuments
+@using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnits
+@using Application.Contracts.Features.Resource.Queries.GetResources
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Поступления</PageTitle>
+<h1>Поступления</h1>
+
+@if (_items == null)
+{
+    <p>Загрузка данных...</p>
+}
+else
+{
+<div class="mb-3">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Дата начала:</label>
+                <input type="date" class="form-control"
+                       @bind="@_startDate"
+                       @bind:format="yyyy-MM-dd" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Дата окончания:</label>
+                <input type="date" class="form-control"
+                       @bind="@_endDate"
+                       @bind:format="yyyy-MM-dd" />
+            </div>
+        </div>
+
+        <!-- Фильтр по ресурсам (левая колонка) -->
+        <div class="col-md-3">
+            <label class="form-label">Фильтр по ресурсам:</label>
+            <div class="border p-2" style="max-height: 200px; overflow-y: auto;">
+                @foreach (var resource in _allResources!)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="@($"resource_{resource.Id}")"
+                               checked="@(_selectedResources?.Contains(resource) ?? false)"
+                               @onchange="@((e) => ToggleResource(resource, (bool)(e.Value ?? false)))"/>
+                        <label class="form-check-label" for="@($"resource_{resource}")">
+                            @resource.Name
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Фильтр по единицам измерения -->
+        <div class="col-md-3">
+            <label class="form-label">Фильтр по единицам измерения:</label>
+            <div class="border p-2" style="max-height: 200px; overflow-y: auto;">
+                @foreach (var unit in _allMeasureUnits!)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="@($"measure-unit_{unit.Id}")"
+                               checked="@(_selectedMeasureUnits?.Contains(unit) ?? false)"
+                               @onchange="@((e) => ToggleMeasureUnit(unit, (bool)(e.Value ?? false)))"/>
+                        <label class="form-check-label" for="@($"measure-unit_{unit}")">
+                            @unit.Name
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Фильтр по номеру документа (правая колонка) -->
+        <div class="col-md-3">
+            <label class="form-label">Фильтр по номерам документа:</label>
+            <div class="border p-2" style="max-height: 200px; overflow-y: auto;">
+                @foreach (var number in _allNumbers!)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="@($"doc-number_{number}")"
+                               checked="@(_selectedNumbers?.Contains(number) ?? false)"
+                               @onchange="@((e) => ToggleNumber(number, (bool)(e.Value ?? false)))"/>
+                        <label class="form-check-label" for="@($"doc-number_{number}")">
+                            @number
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="action-buttons mt-3">
+                <button class="btn btn-primary" @onclick="ApplyFilters">Применить фильтры</button>
+                <button class="btn btn-primary" @onclick="NavigateToCreate">Создать</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Номер документа</th>
+                <th>Дата</th>
+                <th>Ресурс</th>
+                <th>Ед. измерения</th>
+                <th>Количество</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in _items)
+        {
+            var firstResource = true;
+            @foreach (var resource in item.DocumentResources)
+            {
+                <tr @onclick="() => NavigateToEdit(item.Id)">
+                    @if (firstResource)
+                    {
+                        <td rowspan="@item.DocumentResources.Count">@item.DocumentNumber</td>
+                        <td rowspan="@item.DocumentResources.Count">@item.DateOnly</td>
+                        firstResource = false;
+                    }
+                    <td>@resource.ResourceName</td>
+                    <td>@resource.MeasureUnitName</td>
+                    <td>@resource.Count</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<GetLoadingDocumentsResponseDto.LoadingDocumentDto>? _items;
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    private List<GetResourcesResponseDto.GetResourceDto>? _allResources = [];
+    private HashSet<GetResourcesResponseDto.GetResourceDto>? _selectedResources = new();
+    private List<GetMeasureUnitsResponseDto.GetMeasureUnitDto>? _allMeasureUnits = [];
+    private HashSet<GetMeasureUnitsResponseDto.GetMeasureUnitDto>? _selectedMeasureUnits = new();
+    private List<string>? _allNumbers = [];
+    private HashSet<string>? _selectedNumbers = new();
+    private DateOnly? _startDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
+    private DateOnly? _endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(7));
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadResources();
+        await LoadMeasureUnits();
+        await LoadNumbers();
+        await LoadData();
+    }
+
+    private async Task LoadResources()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<GetResourcesResponseDto>($"api/resource/list?state=1");
+            _allResources = response?.Resources;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allResources = new();
+        }
+    }
+
+    private async Task LoadMeasureUnits()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<GetMeasureUnitsResponseDto>($"api/measure-unit/list?state=1");
+            _allMeasureUnits = response?.MeasureUnits;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allMeasureUnits = new();
+        }
+    }
+
+    private async Task LoadNumbers()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<GetLoadingDocumentNumbersResponseDto>($"api/loading/numbers/list");
+            _allNumbers = response?.DocumentNumbers;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allNumbers = new();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            StateHasChanged(); // Принудительное обновление UI
+
+            var dto = new GetLoadingDocumentsRequestDto
+            {
+                DateFrom = _startDate,
+                DateTo = _endDate,
+                DocumentNumbersFilter = _selectedNumbers?.ToList() ?? [],
+                ResourceFilter = _selectedResources?.Select(x => x.Id)
+                                     .ToList() ??
+                                 [],
+                MeasureUnitFilter = _selectedMeasureUnits?.Select(x => x.Id)
+                                        .ToList() ??
+                                    [],
+                Skip = null,
+                Take = null,
+            };
+            var response = await Http.PostAsJsonAsync($"api/loading/list", dto);
+            var responseDto = await response.Content.ReadFromJsonAsync<GetLoadingDocumentsResponseDto>();
+            _items = responseDto?.LoadingDocuments;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки: {ex.Message}");
+        }
+    }
+
+    private void ToggleResource(GetResourcesResponseDto.GetResourceDto resource, bool isSelected)
+    {
+        if (isSelected)
+        {
+            _selectedResources?.Add(resource);
+        }
+        else
+        {
+            _selectedResources?.Remove(resource);
+        }
+    }
+
+    private void ToggleMeasureUnit(GetMeasureUnitsResponseDto.GetMeasureUnitDto measureUnit, bool isSelected)
+    {
+        if (isSelected)
+        {
+            _selectedMeasureUnits?.Add(measureUnit);
+        }
+        else
+        {
+            _selectedMeasureUnits?.Remove(measureUnit);
+        }
+    }
+
+    private void ToggleNumber(string number, bool isSelected)
+    {
+        if (isSelected)
+        {
+            _selectedNumbers?.Add(number);
+        }
+        else
+        {
+            _selectedNumbers?.Remove(number);
+        }
+    }
+
+    private async Task ApplyFilters()
+    {
+        await LoadData();
+    }
+
+    private void NavigateToCreate()
+    {
+        Navigation.NavigateTo("/loadings/edit");
+    }
+
+    private void NavigateToEdit(int resourceId)
+    {
+        Navigation.NavigateTo($"/loadings/edit/{resourceId}");
+    }
+}

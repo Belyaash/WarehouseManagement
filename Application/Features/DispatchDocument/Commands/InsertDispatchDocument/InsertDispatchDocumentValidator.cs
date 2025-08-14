@@ -1,4 +1,4 @@
-using Application.Contracts.Features.GetDispatchDocuments.Commands.InsertDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Commands.InsertDispatchDocument;
 using Domain.Enums;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

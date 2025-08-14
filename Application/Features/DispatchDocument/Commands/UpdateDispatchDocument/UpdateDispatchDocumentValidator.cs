@@ -1,4 +1,4 @@
-using Application.Contracts.Features.GetDispatchDocuments.Commands.UpdateDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Commands.UpdateDispatchDocument;
 using Domain.Enums;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

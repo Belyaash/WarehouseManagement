@@ -1,4 +1,4 @@
-namespace Application.Contracts.Features.GetDispatchDocuments.Queries.GetDispatchDocuments;
+namespace Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocuments;
 
 public sealed class GetDispatchDocumentsRequestDto
 {

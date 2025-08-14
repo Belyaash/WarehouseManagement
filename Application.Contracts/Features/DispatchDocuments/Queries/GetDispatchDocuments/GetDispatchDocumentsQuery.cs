@@ -1,5 +1,5 @@
 using MediatR;
 
-namespace Application.Contracts.Features.GetDispatchDocuments.Queries.GetDispatchDocuments;
+namespace Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocuments;
 
 public sealed record GetDispatchDocumentsQuery(GetDispatchDocumentsRequestDto Dto) : IRequest<GetDispatchDocumentsResponseDto>;

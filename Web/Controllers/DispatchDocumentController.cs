@@ -1,8 +1,9 @@
-using Application.Contracts.Features.GetDispatchDocuments.Commands.DeleteDispatchDocument;
-using Application.Contracts.Features.GetDispatchDocuments.Commands.InsertDispatchDocument;
-using Application.Contracts.Features.GetDispatchDocuments.Commands.UpdateDispatchDocument;
-using Application.Contracts.Features.GetDispatchDocuments.Queries.GetDispatchDocument;
-using Application.Contracts.Features.GetDispatchDocuments.Queries.GetDispatchDocuments;
+using Application.Contracts.Features.DispatchDocuments.Commands.DeleteDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Commands.InsertDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Commands.UpdateDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocumentNumbers;
+using Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocuments;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,10 +17,21 @@ public sealed class DispatchDocumentController : AppController
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    [HttpGet("list")]
-    public async Task<Ok<GetDispatchDocumentsResponseDto>> GetDispatchDocuments([FromQuery] GetDispatchDocumentsRequestDto dto)
+    [HttpPost("list")]
+    public async Task<Ok<GetDispatchDocumentsResponseDto>> GetDispatchDocuments([FromBody] GetDispatchDocumentsRequestDto dto)
     {
         return TypedResults.Ok(await Mediator.Send(new GetDispatchDocumentsQuery(dto), HttpContext.RequestAborted));
+    }
+
+    /// <summary>
+    ///     Получить список номеров документов
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    [HttpGet("numbers/list")]
+    public async Task<Ok<GetDispatchDocumentNumbersResponseDto>> GetDispatchDocumentNumbers([FromQuery] GetDispatchDocumentNumbersRequestDto dto)
+    {
+        return TypedResults.Ok(await Mediator.Send(new GetDispatchDocumentNumbersQuery(dto), HttpContext.RequestAborted));
     }
 
     /// <summary>

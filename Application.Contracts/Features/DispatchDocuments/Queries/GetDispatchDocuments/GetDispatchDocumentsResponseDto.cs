@@ -1,6 +1,6 @@
 using Domain.Enums;
 
-namespace Application.Contracts.Features.GetDispatchDocuments.Queries.GetDispatchDocuments;
+namespace Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocuments;
 
 public sealed class GetDispatchDocumentsResponseDto
 {
@@ -8,6 +8,7 @@ public sealed class GetDispatchDocumentsResponseDto
 
     public class DispatchDocumentDto
     {
+        public required int Id { get; set; }
         public required string DocumentNumber { get; set; }
         public required DateOnly DateOnly { get; set; }
         public required int ClientId { get; set; }

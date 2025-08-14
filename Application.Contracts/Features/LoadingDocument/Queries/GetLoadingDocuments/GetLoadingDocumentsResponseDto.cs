@@ -6,6 +6,7 @@ public sealed class GetLoadingDocumentsResponseDto
 
     public class LoadingDocumentDto
     {
+        public required int Id { get; set; }
         public required string DocumentNumber { get; set; }
         public required DateOnly DateOnly { get; set; }
         public required List<DocumentResourceDto> DocumentResources { get; set; }

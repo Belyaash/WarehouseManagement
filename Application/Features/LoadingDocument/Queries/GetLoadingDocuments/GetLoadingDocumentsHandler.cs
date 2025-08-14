@@ -24,9 +24,11 @@ file sealed class GetLoadingDocumentsHandler : IRequestHandler<GetLoadingDocumen
 
         query = FilterAndPaginateQuery(request, query);
 
+        var loadingDocuments = await query.Select(GetResponseDtoSelector(request))
+            .ToListAsync(cancellationToken);
         return new GetLoadingDocumentsResponseDto()
         {
-            LoadingDocuments = await query.Select(GetResponseDtoSelector(request)).ToListAsync(cancellationToken)
+            LoadingDocuments = loadingDocuments
         };
     }
 
@@ -60,15 +62,17 @@ file sealed class GetLoadingDocumentsHandler : IRequestHandler<GetLoadingDocumen
     {
         return ld => new GetLoadingDocumentsResponseDto.LoadingDocumentDto
         {
+            Id = ld.Id,
             DocumentNumber = ld.DocumentNumber,
             DateOnly = ld.DateOnly,
-            DocumentResources = ld.Resources.Select(r => new GetLoadingDocumentsResponseDto.DocumentResourceDto
+            DocumentResources =
+                ld.Resources.AsQueryable().Select(r => new GetLoadingDocumentsResponseDto.DocumentResourceDto
                 {
                     ResourceId = r.DomainResourceId,
                     ResourceName = r.DomainResource.Name,
                     MeasureUnitId = r.MeasureUnitId,
                     MeasureUnitName = r.MeasureUnit.Name,
-                    Count = r.Count
+                    Count = r.Count,
                 })
                 .Where(FilterByResource(request))
                 .Where(FilterByMeasureUnit(request))
@@ -76,7 +80,7 @@ file sealed class GetLoadingDocumentsHandler : IRequestHandler<GetLoadingDocumen
         };
     }
 
-    private static Func<GetLoadingDocumentsResponseDto.DocumentResourceDto, bool> FilterByMeasureUnit(GetLoadingDocumentsQuery request)
+    private static Expression<Func<GetLoadingDocumentsResponseDto.DocumentResourceDto, bool>> FilterByMeasureUnit(GetLoadingDocumentsQuery request)
     {
         return r => request.Dto.MeasureUnitFilter == null
                     ||
@@ -85,7 +89,7 @@ file sealed class GetLoadingDocumentsHandler : IRequestHandler<GetLoadingDocumen
                     request.Dto.MeasureUnitFilter.Contains(r.MeasureUnitId);
     }
 
-    private static Func<GetLoadingDocumentsResponseDto.DocumentResourceDto, bool> FilterByResource(GetLoadingDocumentsQuery request)
+    private static Expression<Func<GetLoadingDocumentsResponseDto.DocumentResourceDto, bool>> FilterByResource(GetLoadingDocumentsQuery request)
     {
         return r => request.Dto.ResourceFilter == null
                     ||

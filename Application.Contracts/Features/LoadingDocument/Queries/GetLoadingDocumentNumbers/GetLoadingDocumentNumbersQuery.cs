@@ -1,0 +1,5 @@
+using MediatR;
+
+namespace Application.Contracts.Features.LoadingDocument.Queries.GetLoadingDocumentNumbers;
+
+public sealed record GetLoadingDocumentNumbersQuery(GetLoadingDocumentNumbersRequestDto Dto) : IRequest<GetLoadingDocumentNumbersResponseDto>;

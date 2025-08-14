@@ -1,4 +1,4 @@
-using Application.Contracts.Features.GetDispatchDocuments.Queries.GetDispatchDocument;
+using Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocument;
 using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
