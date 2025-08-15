@@ -33,7 +33,7 @@ public class DispatchDocument
     public StateType State { get; set; }
 
     private List<DispatchDocumentResource> _dispatchDocumentResources = new();
-    public IReadOnlyList<DispatchDocumentResource> DispatchDocumentResources => _dispatchDocumentResources.AsReadOnly();
+    public IReadOnlyList<DispatchDocumentResource> DispatchDocumentResources => _dispatchDocumentResources;
 
     public void SetState(StateType state)
     {

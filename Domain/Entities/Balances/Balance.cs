@@ -28,22 +28,22 @@ public class Balance
     public DomainResource DomainResource { get; private set; } = default!;
 
     private List<DispatchDocumentResource> _dispatchDocumentResources = new();
-    public IReadOnlyList<DispatchDocumentResource> DispatchDocumentResources => _dispatchDocumentResources.AsReadOnly();
+    public IReadOnlyList<DispatchDocumentResource> DispatchDocumentResources => _dispatchDocumentResources;
 
     private List<LoadingDocumentResource> _loadingDocumentResources = new();
-    public IReadOnlyList<LoadingDocumentResource> LoadingDocumentResources => _loadingDocumentResources.AsReadOnly();
+    public IReadOnlyList<LoadingDocumentResource> LoadingDocumentResources => _loadingDocumentResources;
     public int Count { get; set; }
 
     #region Spec
 
     public static class Spec
     {
-        public static Specification<Balance> ByResourcesContains(List<int> resourceIds)
+        public static Specification<Balance> ByResourcesContains(IEnumerable<int> resourceIds)
         {
             return new AdHocSpecification<Balance>(r => resourceIds.Contains(r.DomainResourceId));
         }
 
-        public static Specification<Balance> ByMeasureUnitsContains(List<int> measureUnitIds)
+        public static Specification<Balance> ByMeasureUnitsContains(IEnumerable<int> measureUnitIds)
         {
             return new AdHocSpecification<Balance>(r => measureUnitIds.Contains(r.MeasureUnitId));
         }

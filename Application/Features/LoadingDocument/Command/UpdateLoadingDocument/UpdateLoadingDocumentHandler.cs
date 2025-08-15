@@ -2,6 +2,7 @@ using Application.Contracts.Features.LoadingDocument.Commands.UpdateLoadingDocum
 using Domain.Entities.Balances.Parameters;
 using Domain.Entities.LoadingDocumentResources;
 using Domain.Entities.LoadingDocumentResources.Parameters;
+using Domain.Entities.Resources;
 using MediatR;
 using Persistence.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,10 @@ namespace Application.Features.LoadingDocument.Command.UpdateLoadingDocument;
 file sealed class UpdateLoadingDocumentHandler : IRequestHandler<UpdateLoadingDocumentCommand>
 {
     private readonly IAppDbContext _context;
+    private List<Domain.Entities.MeasureUnits.MeasureUnit> _measureUnits = null!;
+    private List<DomainResource> _resources = null!;
+    private List<Domain.Entities.Balances.Balance> _balances = null!;
+
 
     public UpdateLoadingDocumentHandler(IAppDbContext context)
     {
@@ -19,6 +24,8 @@ file sealed class UpdateLoadingDocumentHandler : IRequestHandler<UpdateLoadingDo
 
     public async Task Handle(UpdateLoadingDocumentCommand request, CancellationToken cancellationToken)
     {
+        await LoadBalancesAsync(request, cancellationToken);
+
         var document = await _context.LoadingDocuments
             .Include(x => x.Resources)
             .ThenInclude(x => x.Balance)
@@ -27,10 +34,8 @@ file sealed class UpdateLoadingDocumentHandler : IRequestHandler<UpdateLoadingDo
         document.DocumentNumber = request.Dto.DocumentNumber;
         document.DateOnly = request.Dto.DateOnly;
 
-        await LoadBalancesAsync(request, cancellationToken);
-
         var newResources = AddNewResourcesAndThemDtos(request, document);
-        DeleteResources(request);
+        DeleteResources(request, document);
         UpdateResources(request, newResources, document);
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -38,15 +43,26 @@ file sealed class UpdateLoadingDocumentHandler : IRequestHandler<UpdateLoadingDo
 
     private async Task LoadBalancesAsync(UpdateLoadingDocumentCommand request, CancellationToken cancellationToken)
     {
-        await _context.Balances
-            .Where(b => request.Dto.DocumentResources
-                .Any(d => d.ResourceId == b.Id && d.MeasureUnitId == b.MeasureUnitId))
-            .LoadAsync(cancellationToken);
+        var resourcesList = request.Dto.DocumentResources.Select(x => x.ResourceId).ToArray();
+        var measureUnitsList = request.Dto.DocumentResources.Select(x => x.MeasureUnitId).ToArray();
+
+        _balances = await _context.Balances
+            .Where(Domain.Entities.Balances.Balance.Spec.ByResourcesContains(resourcesList))
+            .Where(Domain.Entities.Balances.Balance.Spec.ByMeasureUnitsContains(measureUnitsList))
+            .ToListAsync(cancellationToken);
+
+        _resources = await _context.Resources
+            .Where(DomainResource.Spec.ByIdsList(resourcesList))
+            .ToListAsync(cancellationToken);
+
+        _measureUnits = await _context.MeasureUnits
+            .Where(Domain.Entities.MeasureUnits.MeasureUnit.Spec.ByIdsList(measureUnitsList))
+            .ToListAsync(cancellationToken);
     }
 
     private void UpdateResources(UpdateLoadingDocumentCommand request, List<UpdateLoadingDocumentRequestDto.DocumentResourceDto> newResources, Domain.Entities.LoadingDocuments.LoadingDocument document)
     {
-        var changedResources = request.Dto.DocumentResources.Except(newResources);
+        var changedResources = request.Dto.DocumentResources.Except(newResources).ToList();
         foreach (var documentResourceDto in changedResources)
         {
             var documentResource = document.Resources
@@ -63,18 +79,18 @@ file sealed class UpdateLoadingDocumentHandler : IRequestHandler<UpdateLoadingDo
     private List<UpdateLoadingDocumentRequestDto.DocumentResourceDto> AddNewResourcesAndThemDtos(UpdateLoadingDocumentCommand request, Domain.Entities.LoadingDocuments.LoadingDocument loadingDocument)
     {
         var newResourceDtos = request.Dto.DocumentResources
-            .Where(dto => !_context.LoadingDocumentResources.Local
+            .Where(dto => !loadingDocument.Resources
                 .Any(r =>
                     r.MeasureUnitId == dto.MeasureUnitId
                     &&
                     dto.ResourceId == r.DomainResourceId))
             .ToList();
 
-        var newResources = request.Dto.DocumentResources.Select(dr =>
+        var newResources = newResourceDtos.Select(dr =>
         {
-            var domainResource = _context.Resources.Local.Single(r => r.Id == dr.ResourceId);
-            var measureUnit = _context.MeasureUnits.Local.Single(mu => mu.Id == dr.MeasureUnitId);
-            var balance = _context.Balances.Local
+            var domainResource = _resources.Single(r => r.Id == dr.ResourceId);
+            var measureUnit = _measureUnits.Single(mu => mu.Id == dr.MeasureUnitId);
+            var balance = _balances
                               .SingleOrDefault(d => d.DomainResourceId == dr.ResourceId
                                                     && d.MeasureUnitId == dr.MeasureUnitId)
                           ?? new Domain.Entities.Balances.Balance(new CreateBalanceParameters
@@ -99,9 +115,9 @@ file sealed class UpdateLoadingDocumentHandler : IRequestHandler<UpdateLoadingDo
         return newResourceDtos;
     }
 
-    private void DeleteResources(UpdateLoadingDocumentCommand request)
+    private void DeleteResources(UpdateLoadingDocumentCommand request, Domain.Entities.LoadingDocuments.LoadingDocument document)
     {
-        var deletedResources = _context.LoadingDocumentResources.Local
+        var deletedResources = document.Resources
             .Where(r => !request.Dto.DocumentResources.Any(dto =>
                 r.MeasureUnitId == dto.MeasureUnitId
                 &&

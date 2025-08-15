@@ -25,7 +25,7 @@ public class LoadingDocument
     public DateOnly DateOnly { get; set; }
 
     private List<LoadingDocumentResource> _resources = new();
-    public IReadOnlyList<LoadingDocumentResource> Resources => _resources.AsReadOnly();
+    public IReadOnlyList<LoadingDocumentResource> Resources => _resources;
 
     #region Spec
 

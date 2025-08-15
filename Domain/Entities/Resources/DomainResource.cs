@@ -26,14 +26,11 @@ public class DomainResource
     public string Name { get; private set; } = default!;
     public StateType State { get; private set; }
 
-    private List<LoadingDocumentResource> _loadingDocumentResources = new();
-    public IReadOnlyList<LoadingDocumentResource> LoadingDocumentResources => _loadingDocumentResources.AsReadOnly();
+    public List<LoadingDocumentResource> LoadingDocumentResources = new();
 
-    private List<DispatchDocumentResource> _dispatchDocumentResources = new();
-    public IReadOnlyList<DispatchDocumentResource> DispatchDocumentResources => _dispatchDocumentResources.AsReadOnly();
+    public List<DispatchDocumentResource> DispatchDocumentResources = new();
 
-    private List<Balance> _balances = new();
-    public IReadOnlyList<Balance> Balances => _balances.AsReadOnly();
+    public List<Balance> Balances = new();
 
     public void Update(UpdateResourceParameters parameters)
     {

@@ -76,6 +76,8 @@ file sealed class GetLoadingDocumentsHandler : IRequestHandler<GetLoadingDocumen
                 })
                 .Where(FilterByResource(request))
                 .Where(FilterByMeasureUnit(request))
+                .OrderBy(x => x.ResourceName)
+                .ThenBy(x => x.MeasureUnitName)
                 .ToList()
         };
     }

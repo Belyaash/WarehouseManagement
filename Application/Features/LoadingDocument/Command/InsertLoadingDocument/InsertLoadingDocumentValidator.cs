@@ -40,6 +40,6 @@ public sealed class InsertLoadingDocumentValidator : AbstractValidator<InsertLoa
     private Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)
     {
         return _context.LoadingDocuments
-            .AnyAsync(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ByNumber(name.Trim()), cancellationToken);
+            .AllAsync(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ByNumber(name.Trim()), cancellationToken);
     }
 }

@@ -22,6 +22,8 @@ file sealed class GetBalancesHandler : IRequestHandler<GetBalancesQuery, GetBala
         return new GetBalancesResponseDto
         {
             Balances = await query.Select(GetResponseDtoSelector())
+                .OrderBy(x => x.ResourceName)
+                .ThenBy(x => x.MeasureUnitName)
                 .ToListAsync(cancellationToken)
         };
     }

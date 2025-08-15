@@ -37,11 +37,16 @@ public sealed class UpdateLoadingDocumentValidator : AbstractValidator<UpdateLoa
         return dtos.DistinctBy(x => new {x.ResourceId, x.MeasureUnitId}).Count() == dtos.Count;
     }
 
-    private Task<bool> IsBalanceStayNotNegative(UpdateLoadingDocumentRequestDto dto, CancellationToken cancellationToken)
+    private async Task<bool> IsBalanceStayNotNegative(UpdateLoadingDocumentRequestDto dto, CancellationToken cancellationToken)
     {
-        return _context.LoadingDocumentResources
+        var documentResources = await _context.LoadingDocumentResources
+            .Include(x => x.Balance)
             .Where(LoadingDocumentResource.Spec.ByDocumentId(dto.Id))
-            .AllAsync(r => r.Balance.Count - GetCountChangeValue(dto, r) >= 0, cancellationToken);
+            .ToListAsync(cancellationToken);
+
+
+        return documentResources
+            .All(r => GetCountChangeValue(dto, r) - r.Count >= 0);
     }
 
     private static int GetCountChangeValue(UpdateLoadingDocumentRequestDto dto, LoadingDocumentResource resource)
@@ -61,6 +66,6 @@ public sealed class UpdateLoadingDocumentValidator : AbstractValidator<UpdateLoa
     {
         return _context.LoadingDocuments
             .Where(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ById(dto.Id))
-            .AnyAsync(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ByNumber(dto.DocumentNumber.Trim()), cancellationToken);
+            .AllAsync(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ByNumber(dto.DocumentNumber.Trim()), cancellationToken);
     }
 }

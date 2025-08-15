@@ -28,13 +28,13 @@ public class MeasureUnit
     public StateType State { get; private set; }
 
     private List<LoadingDocumentResource> _loadingDocumentResource = new();
-    public IReadOnlyList<LoadingDocumentResource> LoadingDocumentResources => _loadingDocumentResource.AsReadOnly();
+    public IReadOnlyList<LoadingDocumentResource> LoadingDocumentResources => _loadingDocumentResource;
 
     private List<DispatchDocumentResource> _dispatchDocumentResources = new();
-    public IReadOnlyList<DispatchDocumentResource> DispatchDocumentResources => _dispatchDocumentResources.AsReadOnly();
+    public IReadOnlyList<DispatchDocumentResource> DispatchDocumentResources => _dispatchDocumentResources;
 
     private List<Balance> _balances = new();
-    public IReadOnlyList<Balance> Balances => _balances.AsReadOnly();
+    public IReadOnlyList<Balance> Balances => _balances;
 
     public void Update(UpdateMeasureUnitParameters parameters)
     {

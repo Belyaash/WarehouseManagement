@@ -19,7 +19,7 @@ public class LoadingDocumentResource
         LoadingDocument = parameters.LoadingDocument;
         MeasureUnit = parameters.MeasureUnit;
         Balance = parameters.Balance;
-        if (Count <= 0)
+        if (parameters.Count <= 0)
             throw new ArgumentException("Количество должно быть больше 0.");
         Count = parameters.Count;
         Balance.Count += parameters.Count;
