@@ -21,11 +21,6 @@ public sealed class DeleteResourceValidator : AbstractValidator<DeleteResourceCo
 
     private async Task<bool> CanBeDeletedAsync(int id, CancellationToken cancellationToken)
     {
-        var a = await _context.Resources
-            .AnyAsync(DomainResource.Spec.ById(id)
-                      &&
-                      DomainResource.Spec.CanBeDeleted(), cancellationToken);
-
         return await _context.Resources
             .AnyAsync(DomainResource.Spec.ById(id)
                       &&
