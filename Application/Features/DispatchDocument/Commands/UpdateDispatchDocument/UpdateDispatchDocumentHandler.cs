@@ -44,8 +44,10 @@ file sealed class UpdateDispatchDocumentHandler : IRequestHandler<UpdateDispatch
     private async Task LoadBalancesAsync(UpdateDispatchDocumentCommand request, CancellationToken cancellationToken)
     {
         await _context.Balances
-            .Where(b => request.Dto.DocumentResources
-                .Any(d => d.ResourceId == b.Id && d.MeasureUnitId == b.MeasureUnitId))
+            .Include(x => x.DomainResource)
+            .Include(x => x.MeasureUnit)
+            .Where(Domain.Entities.Balances.Balance.Spec.ByResourcesContains(request.Dto.DocumentResources.Select(x => x.ResourceId)))
+            .Where(Domain.Entities.Balances.Balance.Spec.ByMeasureUnitsContains(request.Dto.DocumentResources.Select(x => x.MeasureUnitId)))
             .LoadAsync(cancellationToken);
     }
 
@@ -76,7 +78,7 @@ file sealed class UpdateDispatchDocumentHandler : IRequestHandler<UpdateDispatch
                     dto.ResourceId == r.DomainResourceId))
             .ToList();
 
-        var newResources = request.Dto.DocumentResources.Select(dr =>
+        var newResources = newResourceDtos.Select(dr =>
         {
             var domainResource = _context.Resources.Local.Single(r => r.Id == dr.ResourceId);
             var measureUnit = _context.MeasureUnits.Local.Single(mu => mu.Id == dr.MeasureUnitId);

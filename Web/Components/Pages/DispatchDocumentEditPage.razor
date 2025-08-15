@@ -1,0 +1,416 @@
+@page "/dispatchs/edit"
+@page "/dispatchs/edit/{ObjectId:int}"
+@using Application.Contracts.Features.Client.Queries.GetClients
+@using Application.Contracts.Features.DispatchDocuments.Commands.InsertDispatchDocument
+@using Application.Contracts.Features.DispatchDocuments.Commands.UpdateDispatchDocument
+@using Application.Contracts.Features.DispatchDocuments.Queries.GetDispatchDocument
+@using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnits
+@using Application.Contracts.Features.Resource.Queries.GetResources
+@using Domain.Enums
+@using Newtonsoft.Json.Linq
+@inject HttpClient HttpClient
+@rendermode InteractiveServer
+
+<PageTitle>@(_isCreateMode ? "Создание" : "Редактирование")</PageTitle>
+<h2>@(_isCreateMode ? "Создание" : "Редактирование")</h2>
+
+@if (_dto != null)
+{
+    <EditForm Model="_dto">
+        <div class="form-group">
+            <label>Номер</label>
+            <InputText @bind-Value="_dto!.DocumentNumber" disabled="@(_dto.State == StateType.Actual)" @onchange="@(e => _dto.DocumentNumber = e.Value?.ToString() ?? string.Empty)" class="form-control"/>
+            <ValidationMessage For="@(() => _dto.DocumentNumber)"/>
+        </div>
+
+        <div class="form-group">
+            <label>Дата</label>
+            <input type="date" @bind="_dto!.DateOnly" disabled="@(_dto.State == StateType.Actual)" @bind:format="yyyy-MM-dd" class="form-control"/>
+            <ValidationMessage For="@(() => _dto.DateOnly)"/>
+        </div>
+
+        <div class="form-group">
+            <label>Клиент</label>
+            <select class="form-control" disabled="@(_dto.State == StateType.Actual)" @bind="@_dto.ClientId">
+                <label>Клиент</label>
+                @foreach (var client in _allClients!)
+                {
+                    <option value="@client.Id">@client.Name</option>
+                }
+            </select>
+        </div>
+
+        @if (_showError)
+        {
+            <div class="alert alert-danger">@_errorMessage</div>
+        }
+        <div class="action-buttons mt-3">
+
+            <button type="button" class="btn btn-secondary" @onclick="ReturnToList">
+                Назад к списку
+            </button>
+            @if (_dto.State == StateType.Archived)
+            {
+                <button type="button" class="btn btn-primary ms-2" @onclick="() => HandleSave(StateType.Archived)">
+                    Сохранить
+                </button>
+
+                <button type="button" class="btn btn-primary ms-2" @onclick="() => HandleSave(StateType.Actual)">
+                    Сохранить и подписать
+                </button>
+
+                @if (!_isCreateMode)
+                {
+                    <button type="button" class="btn btn-danger ms-2" @onclick="Delete">
+                        Удалить
+                    </button>
+                }
+            }
+
+            @if (_dto.State == StateType.Actual)
+            {
+                @if (!_isCreateMode)
+                {
+                    <button type="button" class="btn btn-danger ms-2" @onclick="() => HandleSave(StateType.Archived)">
+                        Снять подпись
+                    </button>
+                }
+            }
+
+
+        </div>
+        <!-- Секция для отображения списка ресурсов -->
+        <div class="form-group mt-3">
+            <h4>Ресурсы</h4>
+
+            @if (_dto.ResourceDtos.Any())
+            {
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Ресурс</th>
+                        <th>Ед. измерения</th>
+                        <th>Количество</th>
+                        @if (_dto.State == StateType.Archived)
+                        {
+                            <th>Действия</th>
+                        }
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var resource in _dto.ResourceDtos)
+                    {
+                        <tr>
+                            <td>
+                                <select class="form-control" disabled="@(_dto.State == StateType.Actual)" @bind="@resource.ResourceId" @bind:after="() => UpdateResourceAfterBind(resource)">
+                                    @foreach (var res in _allResources!)
+                                    {
+                                        <option value="@res.Id">@res.Name</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control" disabled="@(_dto.State == StateType.Actual)" @bind="@resource.MeasureUnitId" @bind:after="() => UpdateMeasureUnitAfterBind(resource)">
+                                    @foreach (var unit in _allMeasureUnits!)
+                                    {
+                                        <option value="@unit.Id">@unit.Name</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" disabled="@(_dto.State == StateType.Actual)" class="form-control" @bind="resource.Count" min="1" />
+                            </td>
+                            @if (_dto.State == StateType.Archived)
+                            {
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            @onclick="@(() => RemoveResource(resource))">
+                                        Удалить
+                                    </button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>Нет добавленных ресурсов</p>
+            }
+            <!-- Форма для добавления нового ресурса -->
+            <div class="card mt-3" hidden="@(_dto.State == StateType.Actual)">
+                <div class="card-header">
+                    <h5>Добавить ресурс</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Ресурс</label>
+                            <select class="form-control" @bind="_newResource.ResourceId">
+                                @foreach (var resource in _allResources!)
+                                {
+                                    <option value="@resource.Id">@resource.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Ед. измерения</label>
+                            <select class="form-control" @bind="_newResource.MeasureUnitId">
+                                @foreach (var unit in _allMeasureUnits!)
+                                {
+                                    <option value="@unit.Id">@unit.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Количество</label>
+                            <input type="number" class="form-control" @bind="_newResource.Count" min="1" />
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary" @onclick="AddResource">
+                                Добавить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int? ObjectId { get; set; }
+    private GetDispatchDocumentResponseDto? _dto { get; set; }
+    private bool _isCreateMode = true;
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    private Timer? _errorTimer;
+    private bool _showError;
+    private string? _errorMessage;
+    private List<GetResourcesResponseDto.GetResourceDto>? _allResources = [];
+    private List<GetClientsResponseDto.GetClientDto>? _allClients = [];
+    private List<GetMeasureUnitsResponseDto.GetMeasureUnitDto>? _allMeasureUnits = [];
+    private GetDispatchDocumentResponseDto.DocumentResourceDto _newResource = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadResources();
+        await LoadMeasureUnits();
+        await LoadClients();
+
+        _newResource = new GetDispatchDocumentResponseDto.DocumentResourceDto
+        {
+            Id = -1,
+            ResourceId = _allResources!.First().Id,
+            ResourceName = _allResources!.First().Name,
+            MeasureUnitId = _allMeasureUnits!.First().Id,
+            MeasureUnitName = _allMeasureUnits!.First().Name,
+            Count = 1
+        };
+
+        if (ObjectId.HasValue)
+        {
+            _isCreateMode = false;
+            _dto = (await HttpClient.GetFromJsonAsync<GetDispatchDocumentResponseDto>($"api/dispatch?id={ObjectId}", CancellationToken.None))!;
+        }
+        else
+        {
+            _dto = new GetDispatchDocumentResponseDto
+            {
+                DocumentNumber = "",
+                State = StateType.Archived,
+                ClientId = _allClients!.First().Id,
+                ClientName = _allClients!.First().Name,
+                DateOnly = DateOnly.FromDateTime(DateTime.Now),
+                ResourceDtos = [],
+            };
+        }
+    }
+
+    private async Task LoadResources()
+    {
+        try
+        {
+            var response = await HttpClient.GetFromJsonAsync<GetResourcesResponseDto>($"api/resource/list?state=1");
+            _allResources = response?.Resources;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allResources = new();
+        }
+    }
+
+    private async Task LoadMeasureUnits()
+    {
+        try
+        {
+            var response = await HttpClient.GetFromJsonAsync<GetMeasureUnitsResponseDto>($"api/measure-unit/list?state=1");
+            _allMeasureUnits = response?.MeasureUnits;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allMeasureUnits = new();
+        }
+    }
+
+    private async Task LoadClients()
+    {
+        try
+        {
+            var response = await HttpClient.GetFromJsonAsync<GetClientsResponseDto>($"api/client/list?state=1");
+            _allClients = response?.Clients;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки ресурсов: {ex.Message}");
+            _allClients = new();
+        }
+    }
+
+    private async Task HandleSave(StateType type)
+    {
+        _showError = false;
+        _errorMessage = null;
+        _errorTimer?.Dispose();
+
+        if (ObjectId == null)
+        {
+            await Create(type);
+            return;
+        }
+
+        await Update(type);
+    }
+
+    private async Task Create(StateType type)
+    {
+        var dto = new InsertDispatchDocumentRequestDto
+        {
+            DocumentNumber = _dto!.DocumentNumber,
+            DateOnly = _dto.DateOnly,
+            DocumentResources = _dto.ResourceDtos.Select(x => new InsertDispatchDocumentRequestDto.DocumentResourceDto
+                {
+                    ResourceId = x.ResourceId,
+                    MeasureUnitId = x.MeasureUnitId,
+                    Count = x.Count
+                })
+                .ToList(),
+            ClientId = _dto.ClientId,
+            StateType = type
+        };
+        var response = await HttpClient.PostAsJsonAsync("api/dispatch", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task Update(StateType type)
+    {
+        var dto = new UpdateDispatchDocumentRequestDto
+        {
+            Id = ObjectId!.Value,
+            DocumentNumber = _dto!.DocumentNumber,
+            DateOnly = _dto.DateOnly,
+            DocumentResources = _dto.ResourceDtos.Select(x => new UpdateDispatchDocumentRequestDto.DocumentResourceDto
+                {
+                    ResourceId = x.ResourceId,
+                    MeasureUnitId = x.MeasureUnitId,
+                    Count = x.Count
+                })
+                .ToList(),
+            ClientId = _dto.ClientId,
+            State = type
+        };
+
+        var response = await HttpClient.PutAsJsonAsync("api/dispatch", dto);
+
+        await ReadCommandResponse(response);
+    }
+
+    private async Task ReadCommandResponse(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/dispatchs");
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var jObject = JObject.Parse(responseContent);
+            _errorMessage = jObject["message"]?.ToString();
+            StartErrorTimer();
+        }
+    }
+
+    private async Task Delete()
+    {
+        var response = await HttpClient.DeleteAsync($"api/dispatch?id={ObjectId}");
+
+        await ReadCommandResponse(response);
+    }
+
+    private void ReturnToList()
+    {
+        Navigation.NavigateTo("/dispatchs");
+    }
+
+    private void StartErrorTimer()
+    {
+        _showError = true;
+        _errorTimer = new Timer(_ =>
+        {
+            _showError = false;
+            InvokeAsync(StateHasChanged);
+        }, null, 5000, Timeout.Infinite);
+    }
+
+    private void RemoveResource(GetDispatchDocumentResponseDto.DocumentResourceDto resource)
+    {
+        if (_dto == null) return;
+        _dto.ResourceDtos.Remove(resource);
+    }
+
+    private void UpdateResourceAfterBind(GetDispatchDocumentResponseDto.DocumentResourceDto resource)
+    {
+        var selectedResource = _allResources!.FirstOrDefault(r => r.Id == resource.ResourceId);
+        if (selectedResource != null)
+        {
+            resource.ResourceName = selectedResource.Name;
+            resource.ResourceId = selectedResource.Id;
+        }
+    }
+
+    private void UpdateMeasureUnitAfterBind(GetDispatchDocumentResponseDto.DocumentResourceDto resource)
+    {
+        var selectedUnit = _allMeasureUnits!.FirstOrDefault(u => u.Id == resource.MeasureUnitId);
+        if (selectedUnit != null)
+        {
+            resource.MeasureUnitName = selectedUnit.Name;
+            resource.MeasureUnitId = selectedUnit.Id;
+        }
+    }
+
+    private void AddResource()
+    {
+        if (_dto == null) return;
+
+        var selectedResource = _allResources!.FirstOrDefault(r => r.Id == _newResource.ResourceId);
+        var selectedUnit = _allMeasureUnits!.FirstOrDefault(u => u.Id == _newResource.MeasureUnitId);
+
+        if (selectedResource == null || selectedUnit == null || _newResource.Count <= 0) return;
+
+        _dto.ResourceDtos.Add(new GetDispatchDocumentResponseDto.DocumentResourceDto
+        {
+            Id = 0, // Для новых ресурсов
+            ResourceId = _newResource.ResourceId,
+            ResourceName = selectedResource.Name,
+            MeasureUnitId = _newResource.MeasureUnitId,
+            MeasureUnitName = selectedUnit.Name,
+            Count = _newResource.Count
+        });
+    }
+}

@@ -45,19 +45,23 @@ public sealed class InsertDispatchDocumentValidator : AbstractValidator<InsertDi
         return !documentResourceDtos.Any(dto => dto.Count <= 0);
     }
 
-    private Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)
+    private async Task<bool> IsValueUniqueAsync(string name, CancellationToken cancellationToken)
     {
-        return _context.LoadingDocuments
-            .AllAsync(!Domain.Entities.LoadingDocuments.LoadingDocument.Spec.ByNumber(name.Trim()), cancellationToken);
+        return await _context.DispatchDocuments
+            .AllAsync(!Domain.Entities.DispatchDocuments.DispatchDocument.Spec.ByNumber(name.Trim()), cancellationToken);
     }
 
     private async Task<bool> IsBalanceStayNotNegativeAsync(List<InsertDispatchDocumentRequestDto.DocumentResourceDto> dtos, CancellationToken cancellationToken)
     {
-        var balancesCount = await _context.Balances
-            .Where(balance => dtos.Any(dto => dto.ResourceId == balance.Id
+        var balances = await _context.Balances
+            .Where(Domain.Entities.Balances.Balance.Spec.ByResourcesContains(dtos.Select(r => r.ResourceId)))
+            .Where(Domain.Entities.Balances.Balance.Spec.ByMeasureUnitsContains(dtos.Select(r => r.MeasureUnitId)))
+            .ToListAsync(cancellationToken);
+
+        var balancesCount = balances
+            .Count(balance => dtos.Any(dto => dto.ResourceId == balance.DomainResourceId
                                               && dto.MeasureUnitId == balance.MeasureUnitId
-                                              && balance.Count >= dto.Count))
-            .CountAsync(cancellationToken);
+                                              && balance.Count >= dto.Count));
 
         return dtos.Count == balancesCount;
     }
