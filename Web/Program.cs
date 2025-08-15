@@ -1,5 +1,6 @@
 using Application;
 using Persistence;
+using Persistence.Contracts;
 using Web.Components;
 using Web.Middlewares;
 
@@ -37,6 +38,16 @@ internal static class Program
         app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseHttpsRedirection();
+
+        // if (!app.Environment.IsDevelopment())
+        // {
+            await using var s = app.Services.CreateAsyncScope();
+
+            var scopeFactory = s.ServiceProvider.GetRequiredService<IServiceScopeFactory>();
+            await using var scope = scopeFactory.CreateAsyncScope();
+            var appDbContext = scope.ServiceProvider.GetRequiredService<IMigrationContext>();
+            await appDbContext.MigrateAsync();
+        // }
 
 
         app.UseAntiforgery();
