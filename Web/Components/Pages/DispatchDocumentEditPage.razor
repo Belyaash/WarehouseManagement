@@ -204,10 +204,10 @@
         _newResource = new GetDispatchDocumentResponseDto.DocumentResourceDto
         {
             Id = -1,
-            ResourceId = _allResources!.First().Id,
-            ResourceName = _allResources!.First().Name,
-            MeasureUnitId = _allMeasureUnits!.First().Id,
-            MeasureUnitName = _allMeasureUnits!.First().Name,
+            ResourceId = _allResources?.FirstOrDefault()?.Id ?? -1,
+            ResourceName = _allResources?.FirstOrDefault()?.Name ?? "Нет доступных ресурсов",
+            MeasureUnitId = _allMeasureUnits?.FirstOrDefault()?.Id ?? -1,
+            MeasureUnitName = _allMeasureUnits?.FirstOrDefault()?.Name ?? "Нет доступных единиц измерения",
             Count = 1
         };
 
@@ -215,6 +215,30 @@
         {
             _isCreateMode = false;
             _dto = (await HttpClient.GetFromJsonAsync<GetDispatchDocumentResponseDto>($"api/dispatch?id={ObjectId}", CancellationToken.None))!;
+            _allResources = _allResources!.Union(_dto.ResourceDtos
+                    .Select(x => new GetResourcesResponseDto.GetResourceDto
+                    {
+                        Id = x.ResourceId,
+                        Name = x.ResourceName
+                    }))
+                .DistinctBy(x => x.Id)
+                .ToList();
+            _allMeasureUnits = _allMeasureUnits!.Union(_dto.ResourceDtos
+                    .Select(x => new GetMeasureUnitsResponseDto.GetMeasureUnitDto()
+                    {
+                        Id = x.MeasureUnitId,
+                        Name = x.MeasureUnitName
+                    }))
+                .DistinctBy(x => x.Id)
+                .ToList();
+            _allClients!.Add(
+                    new GetClientsResponseDto.GetClientDto
+                    {
+                        Id = _dto.ClientId,
+                        Name = _dto.ClientName,
+                        Address = ""
+                    });
+            _allClients = _allClients.DistinctBy(x => x.Id).ToList();
         }
         else
         {
@@ -222,11 +246,17 @@
             {
                 DocumentNumber = "",
                 State = StateType.Archived,
-                ClientId = _allClients!.First().Id,
-                ClientName = _allClients!.First().Name,
+                ClientId = _allClients!.FirstOrDefault()?.Id ?? -1,
+                ClientName = _allClients!.FirstOrDefault()?.Name ?? "Нет доступных клиентов",
                 DateOnly = DateOnly.FromDateTime(DateTime.Now),
                 ResourceDtos = [],
             };
+        }
+
+        if (_allClients?.Count == 0 || _allResources?.Count == 0 || _allMeasureUnits?.Count == 0)
+        {
+            _showError = true;
+            _errorMessage = "Невозможно создать запись";
         }
     }
 
