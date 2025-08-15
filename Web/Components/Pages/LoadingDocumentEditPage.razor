@@ -5,11 +5,11 @@
 @using Application.Contracts.Features.LoadingDocument.Queries.GetLoadingDocument
 @using Application.Contracts.Features.MeasureUnit.Queries.GetMeasureUnits
 @using Application.Contracts.Features.Resource.Queries.GetResources
-@using Domain.Enums
 @using Newtonsoft.Json.Linq
 @inject HttpClient HttpClient
 @rendermode InteractiveServer
 
+<PageTitle>@(_isCreateMode ? "Создание" : "Редактирование")</PageTitle>
 <h2>@(_isCreateMode ? "Создание" : "Редактирование")</h2>
 
 @if (_dto != null)
